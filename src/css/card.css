@@ -1,0 +1,89 @@
+.card {
+  background-image: url(../cards.svg);
+  width: 100px;
+  height: 150px;
+  background-size: 1400px;
+  float: left;
+  border-radius: 17px;
+  margin: 10px;
+  border: 1px solid black;
+  cursor: pointer;
+  transition: all 0.1s;
+  background-position-x: 0px;
+  background-position-y: 1350px;
+}
+
+.card:hover {
+  z-index: 300;
+  box-shadow: 0px 0px 10px -2px black;
+  rotate: 2deg;
+}
+
+.card:not(:first-child) {
+  margin-left: -25px;
+}
+
+.symbol-0 {
+  background-position-x: 0px;
+}
+.symbol-1 {
+  background-position-x: -101px;
+}
+.symbol-2 {
+  background-position-x: -200px;
+}
+.symbol-3 {
+  background-position-x: -300px;
+}
+.symbol-4 {
+  background-position-x: -400px;
+}
+.symbol-5 {
+  background-position-x: -500px;
+}
+.symbol-6 {
+  background-position-x: -600px;
+}
+.symbol-7 {
+  background-position-x: -700px;
+}
+.symbol-8 {
+  background-position-x: -800px;
+}
+.symbol-9 {
+  background-position-x: -900px;
+}
+.symbol-SKIP {
+  background-position-x: -1000px;
+}
+.symbol-SWITCHDIRECTION {
+  background-position-x: -1100px;
+}
+.symbol-PICKUP2 {
+  background-position-x: -1200px;
+}
+.symbol-PICKUP4 {
+  background-position-x: -1300px;
+  background-position-y: 150px;
+}
+
+.symbol-SETCOLOUR {
+  background-position-x: -1300px;
+  background-position-y: 0px;
+}
+
+.colour-red {
+  background-position-y: -1px;
+}
+
+.colour-blue {
+  background-position-y: 150px;
+}
+
+.colour-green {
+  background-position-y: 300px;
+}
+
+.colour-yellow {
+  background-position-y: 450px;
+}
