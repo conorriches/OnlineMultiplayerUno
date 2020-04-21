@@ -42,9 +42,11 @@ io.on("connection", (socket) => {
     const me = getUserBySocket(users, socket.id);
     const game = getGameById(games, gameId);
 
-    const exists = game.players.map((p) => p.id).indexOf(me.token) > -1;
-    if (game && me && !exists) {
-      game.players.push({ id: me.token, name: "Testing" });
+    if (game && me) {
+      const exists = game.players.map((p) => p.id).indexOf(me.token) > -1;
+      if (!exists) {
+        game.players.push({ id: me.token, name: "Testing" });
+      }
     }
 
     if (game) {

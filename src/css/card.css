@@ -73,17 +73,17 @@
 }
 
 .colour-red {
-  background-position-y: -1px;
+  background-position-y: 0px;
 }
 
 .colour-blue {
-  background-position-y: 150px;
+  background-position-y: 750px;
 }
 
 .colour-green {
-  background-position-y: 300px;
+  background-position-y: 900px;
 }
 
 .colour-yellow {
-  background-position-y: 450px;
+  background-position-y: 1050px;
 }

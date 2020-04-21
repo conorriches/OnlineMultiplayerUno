@@ -13,8 +13,18 @@ const socket = openSocket(`localhost:3030`);
 function App() {
   const [game, setGame] = useState(false);
   const [user, setUser] = useState(false);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
+    socket.addEventListener("error", (e) => {
+      setError(e);
+    });
+    socket.addEventListener("close", (e) => {
+      setError(e);
+    });
+    socket.addEventListener("open", (e) => {
+      setError(false);
+    });
     socket.on("PLAYER_ID", (obj) => {
       localStorage.setItem("playerId", obj.playerId);
     });
@@ -69,6 +79,12 @@ function App() {
             </div>
           </div>
         </nav>
+
+        {error && (
+          <div class="notification is-danger">
+            Please refresh as the connection to the server has failed
+          </div>
+        )}
 
         {!game && <Welcome game={game} user={user} socket={socket} />}
         {game && game.players && !game.started && (

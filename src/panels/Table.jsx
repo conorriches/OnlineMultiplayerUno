@@ -13,7 +13,6 @@ const Table = ({ game, user, socket }) => {
           <Decks game={game} />
           <div class="box">
             <div class="deck">
-              {console.log(myCards)}
               {myCards.map((c) => {
                 return <Card symbol={c.symbol} colour={c.colour || ""} />;
               })}
