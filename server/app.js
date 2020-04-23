@@ -31,6 +31,7 @@ io.on("connection", (socket) => {
   logger.verbose(`Socket Connect: ${socket.id}`);
 
   socket.on("REGISTER_USER", (token, name) => {
+    console.log("REGISTER USER");
     if (!token) {
       token = generateToken();
     }
@@ -63,6 +64,45 @@ io.on("connection", (socket) => {
     if (me.token === game.lead) {
       logger.verbose("Start game by" + socket.id);
       game.start();
+      updatePlayersByGameId(users, games, game.id).forEach((s) => {
+        io.to(s).emit("GAME_STATE", game.status(me));
+      });
+    }
+  });
+
+  socket.on("CHOOSE_COLOUR", (colour) => {
+    const game = myGame(users, games, socket.id);
+    const me = getUserBySocket(users, socket.id);
+    const name = game.players.filter((p) => p.id === me.token)[0].name;
+
+    if (game.setColour(me, colour)) {
+      game.addMessage(name, `set the colour to ${colour}`);
+      updatePlayersByGameId(users, games, game.id).forEach((s) => {
+        io.to(s).emit("GAME_STATE", game.status(me));
+      });
+    }
+  });
+
+  socket.on("PLAY_CARD", (card) => {
+    const game = myGame(users, games, socket.id);
+    const me = getUserBySocket(users, socket.id);
+    const name = game.players.filter((p) => p.id === me.token)[0].name;
+
+    const response = game.playCard(card, me.token);
+    if (response) {
+      game.addMessage(
+        name,
+        `played a ${card.colour !== "NOCOLOUR" ? card.colour : ""} ${
+          card.symbol
+        }`
+      );
+
+      game.players
+        .filter((p) => p.deck.length == 1)
+        .forEach((p) =>
+          game.addMessage(false, `${name} has just one card left`)
+        );
+
       updatePlayersByGameId(users, games, game.id).forEach((s) => {
         io.to(s).emit("GAME_STATE", game.status(me));
       });

@@ -13,18 +13,23 @@ const socket = openSocket(`localhost:3030`);
 function App() {
   const [game, setGame] = useState(false);
   const [user, setUser] = useState(false);
-  const [error, setError] = useState(false);
+  const [error, setError] = useState(true);
 
   useEffect(() => {
-    socket.addEventListener("error", (e) => {
+    socket.on("error", (e) => {
       setError(e);
+      setUser();
     });
-    socket.addEventListener("close", (e) => {
+    socket.on("disconnect", (e) => {
       setError(e);
+      setUser();
     });
-    socket.addEventListener("open", (e) => {
+    socket.on("connect", (e) => {
       setError(false);
+      const playerId = localStorage.getItem("playerId");
+      setUser(playerId);
     });
+
     socket.on("PLAYER_ID", (obj) => {
       localStorage.setItem("playerId", obj.playerId);
     });
@@ -43,35 +48,39 @@ function App() {
   useEffect(() => {
     if (user) {
       socket.emit("REGISTER_USER", user);
-      //socket.emit("JOIN_GAME", 1234);
-      //socket.emit("START_GAME");
+      socket.emit("JOIN_GAME", 1234);
+      // socket.emit("START_GAME");
     }
   }, [user]);
 
   return (
     <>
       <div className="container">
-        <nav class="navbar" role="navigation" aria-label="main navigation">
-          <div id="navbarBasicExample" class="navbar-menu">
-            <div class="navbar-brand">
-              <div class="navbar-item">
-                <div class="button is-info">
+        <nav className="navbar" role="navigation" aria-label="main navigation">
+          <div id="navbarBasicExample" className="navbar-menu">
+            <div className="navbar-brand">
+              <div className="navbar-item">
+                <div className="button is-info">
                   <strong>Online Multiplayer Uno!</strong>
                 </div>
               </div>
             </div>
 
-            <div class="navbar-end">
-              <div class="navbar-item">
-                <div class="buttons">
+            <div className="navbar-end">
+              <div className="navbar-item">
+                <div className="buttons">
                   {game.id && (
-                    <div class="button is-primary">
+                    <div className="button is-primary">
                       <strong> #{game.id}</strong>
                     </div>
                   )}
                   {user && (
-                    <div class="button is-warning">
-                      <strong> {user}</strong>
+                    <div className="button is-warning">
+                      <strong>
+                        {game
+                          ? game.players.filter((p) => p.id === user)[0].name
+                          : user}
+                      </strong>
                     </div>
                   )}
                 </div>
@@ -81,17 +90,23 @@ function App() {
         </nav>
 
         {error && (
-          <div class="notification is-danger">
-            Please refresh as the connection to the server has failed
+          <div className="notification is-danger">
+            <b>The connection to the server has failed.</b> <br />
+            If it's just your internet, you'll be automatically reconnected and
+            the game will resume from where you were at.
           </div>
         )}
 
-        {!game && <Welcome game={game} user={user} socket={socket} />}
-        {game && game.players && !game.started && (
-          <Lobby game={game} user={user} socket={socket} />
-        )}
-        {game && game.players && game.started && (
-          <Table game={game} user={user} socket={socket} />
+        {!error && (
+          <>
+            {!game && <Welcome game={game} user={user} socket={socket} />}
+            {game && game.players && !game.started && (
+              <Lobby game={game} user={user} socket={socket} />
+            )}
+            {game && game.players && game.started && (
+              <Table game={game} user={user} socket={socket} />
+            )}
+          </>
         )}
       </div>
     </>

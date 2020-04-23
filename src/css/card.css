@@ -8,7 +8,7 @@
   margin: 10px;
   border: 1px solid black;
   cursor: pointer;
-  transition: all 0.1s;
+  transition: rotate 0.1s;
   background-position-x: 0px;
   background-position-y: 1350px;
 }
@@ -63,8 +63,8 @@
   background-position-x: -1200px;
 }
 .symbol-PICKUP4 {
-  background-position-x: -1300px;
-  background-position-y: 150px;
+  background-position-x: -1300px !important;
+  background-position-y: 150px !important;
 }
 
 .symbol-SETCOLOUR {
@@ -72,18 +72,18 @@
   background-position-y: 0px;
 }
 
-.colour-red {
+.colour-RED {
   background-position-y: 0px;
 }
 
-.colour-blue {
+.colour-BLUE {
   background-position-y: 750px;
 }
 
-.colour-green {
+.colour-GREEN {
   background-position-y: 900px;
 }
 
-.colour-yellow {
+.colour-YELLOW {
   background-position-y: 1050px;
 }

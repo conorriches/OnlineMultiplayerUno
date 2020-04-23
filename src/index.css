@@ -12,7 +12,109 @@ code {
     monospace;
 }
 
+.table.animate .players {
+  opacity: 0;
+  animation: fadein 1s;
+  animation-delay: 0;
+  animation-fill-mode: forwards;
+}
+
+.table.animate .decks {
+  opacity: 0;
+  animation: fadein 1s;
+  animation-delay: 2s;
+  animation-fill-mode: forwards;
+}
+
+.table.animate .actions {
+  opacity: 0;
+  animation: fadein 1s;
+  animation-delay: 0s;
+  animation-fill-mode: forwards;
+}
+
+.table.animate .events {
+  opacity: 0;
+  animation: fadein 1s;
+  animation-delay: 1s;
+  animation-fill-mode: forwards;
+}
+
+@keyframes fadein {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 .deck {
   background: white;
   display: inline-block;
+}
+
+.deck.disabled {
+  opacity: 0.6;
+}
+
+.deck.disabled .card {
+  cursor: no-drop;
+}
+
+.select-colour {
+  margin: 0 0.5rem !important;
+}
+
+.select-colour.clickable {
+  cursor: pointer;
+}
+.select-colour.RED {
+  background: red;
+  color: black;
+}
+.select-colour.GREEN {
+  background: green;
+  color: black;
+}
+.select-colour.BLUE {
+  background: blue;
+  color: white;
+}
+.select-colour.YELLOW {
+  background: yellow;
+  color: black;
+}
+
+.players .tags:not(:last-child) {
+  margin: 0 0.5rem;
+}
+
+.messages {
+  position: relative;
+}
+
+.messages li {
+  list-style-type: none;
+  text-align: left;
+}
+
+.messages .fade {
+  background: rgb(255, 255, 255);
+  background: linear-gradient(
+    0deg,
+    rgba(255, 255, 255, 1) 0%,
+    rgba(34, 193, 195, 0) 100%
+  );
+  height: 2rem;
+  width: 100%;
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  right: 0;
+}
+
+.box .subtitle,
+.box .title {
+  color: black !important;
 }

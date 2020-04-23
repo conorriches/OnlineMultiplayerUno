@@ -1,28 +1,28 @@
 import React from "react";
 import Card from "./Card";
+
+import Colour from "./Colour";
 import "../css/card.css";
 
-const Decks = ({ game, users }) => {
+const Decks = ({ game, users, drawCard }) => {
   return (
-    <div class="box">
-      <div class="level">
-        <div class="level-item has-text-centered">
-          <div class="notification is-dark">
+    <div className="box decks">
+      <div className="level">
+        <div className="level-item has-text-centered">
+          Discard ({game.discardLength}):
+          {game.topCard && (
             <Card
               symbol={game.topCard.symbol}
               colour={game.topCard.colour || ""}
+              onClick={() => {
+                alert("What were you trying to do???");
+              }}
             />
-          </div>
+          )}
         </div>
-        <div class="level-item has-text-centered">
-          <div class="notification is-primary">
-            <p>It's Conor's Go</p>
-          </div>
-        </div>
-        <div class="level-item has-text-centered">
-          <div class="notification is-primary">
-            <Card />
-          </div>
+        <div className="level-item has-text-centered">
+          Draw ({game.deckLength}):
+          <Card onClick={drawCard} />
         </div>
       </div>
     </div>

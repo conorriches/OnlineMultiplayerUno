@@ -16,16 +16,16 @@ const Welcome = ({ game, user, socket }) => {
   }, []);
 
   return (
-    <section class="hero is-warning is-bold">
-      <div class="hero-body">
-        <div class="container">
-          <h1 class="title">Online Multiplayer Uno</h1>
+    <section className="hero is-warning is-bold">
+      <div className="hero-body">
+        <div className="container">
+          <h1 className="title">Online Multiplayer Uno</h1>
 
-          <article class="message is-info">
-            <div class="message-header">
+          <article className="message is-info">
+            <div className="message-header">
               <p>Join a game</p>
             </div>
-            <div class="message-body">
+            <div className="message-body">
               <p>
                 To join a game, enter the game ID. You'll automatically be
                 entered.
@@ -37,13 +37,13 @@ const Welcome = ({ game, user, socket }) => {
             </div>
           </article>
 
-          <article class="message is-warning">
-            <div class="message-header">
+          <article className="message is-warning">
+            <div className="message-header">
               <p>Create a game</p>
             </div>
-            <div class="message-body">
+            <div className="message-body">
               <p>Coming soon, create a room for your friends to join</p>
-              <button class="button is-warning">Create new game</button>
+              <button className="button is-warning">Create new game</button>
             </div>
           </article>
         </div>

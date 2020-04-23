@@ -1,22 +1,64 @@
 import React, { useState, useEffect } from "react";
 import Card from "../components/Card";
+import Colour from "../components/Colour";
 import Players from "../components/Players";
 import Decks from "../components/Decks";
+import Actions from "../components/Actions";
+import Messages from "../components/Messages";
 
 const Table = ({ game, user, socket }) => {
-  const myCards = game.players.filter((p) => p.id === user)[0].deck;
+  const player = game.players.filter((p) => p.id === user);
+  const myCards = !!player.length ? player[0].deck : [];
+
+  const playCard = (colour, symbol) => {
+    socket.emit("PLAY_CARD", {
+      colour,
+      symbol,
+    });
+  };
+
+  const drawCard = () => {
+    socket.emit("DRAW_CARD");
+  };
+
+  const chooseColour = (colour) => {
+    socket.emit("CHOOSE_COLOUR", colour);
+  };
+
   return (
-    <section class="hero is-dark">
-      <div class="hero-body">
-        <div class="container">
-          <Players game={game} />
-          <Decks game={game} />
-          <div class="box">
-            <div class="deck">
-              {myCards.map((c) => {
-                return <Card symbol={c.symbol} colour={c.colour || ""} />;
-              })}
+    <section
+      className={`table hero is-dark ${game.discardLength === 1 && "animate"}`}
+    >
+      <div className="hero-body">
+        <div className="columns">
+          <div className="players column">
+            <Players game={game} />
+          </div>
+        </div>
+        <div class="columns">
+          <div class="column is-two-thirds">
+            <Decks game={game} drawCard={drawCard} />
+            <div className="actions box">
+              <Actions
+                game={game}
+                chooseColour={chooseColour}
+                drawCard={drawCard}
+              />
+              <div className="deck">
+                {myCards.map((c) => {
+                  return (
+                    <Card
+                      symbol={c.symbol}
+                      colour={c.colour || ""}
+                      onClick={playCard}
+                    />
+                  );
+                })}
+              </div>
             </div>
+          </div>
+          <div class="events column">
+            <Messages game={game} />
           </div>
         </div>
       </div>
