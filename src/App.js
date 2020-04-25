@@ -14,6 +14,7 @@ function App() {
   const [game, setGame] = useState(false);
   const [user, setUser] = useState(false);
   const [error, setError] = useState(true);
+  const [userMessage, setUserMessage] = useState(false);
 
   useEffect(() => {
     socket.on("error", (e) => {
@@ -34,8 +35,12 @@ function App() {
       localStorage.setItem("playerId", obj.playerId);
     });
 
+    socket.on("USER_MESSAGE", (obj) => {
+      setUserMessage(obj);
+    });
+
     socket.on("GAME_STATE", (state) => {
-      console.log("GOT GAME STATE", state);
+      setUserMessage(false);
       state && setGame(state);
     });
   }, []);
@@ -48,8 +53,8 @@ function App() {
   useEffect(() => {
     if (user) {
       socket.emit("REGISTER_USER", user);
-      socket.emit("JOIN_GAME", 1234);
-      // socket.emit("START_GAME");
+      //socket.emit("JOIN_GAME", 1234);
+      //socket.emit("START_GAME");
     }
   }, [user]);
 
@@ -94,6 +99,16 @@ function App() {
             <b>The connection to the server has failed.</b> <br />
             If it's just your internet, you'll be automatically reconnected and
             the game will resume from where you were at.
+          </div>
+        )}
+
+        {userMessage && (
+          <div className="notification is-danger">
+            <button
+              class="delete"
+              onClick={() => setUserMessage(false)}
+            ></button>
+            {userMessage}
           </div>
         )}
 

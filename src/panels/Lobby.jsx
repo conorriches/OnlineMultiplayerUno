@@ -2,7 +2,6 @@ import React from "react";
 
 const Lobby = ({ game, user, socket }) => {
   const start = () => {
-    console.log("START");
     socket.emit("START_GAME");
   };
 

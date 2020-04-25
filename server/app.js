@@ -1,13 +1,11 @@
 const io = require("socket.io")();
 const {
-  updatePlayersByGameId,
-  getSocketByToken,
+  getPlayersByGameId,
   getUserBySocket,
   registerUser,
   generateToken,
   getGameById,
   myGame,
-  filterOtherPlayerCards,
 } = require("./helpers");
 
 io.origins("*:*"); // for latest version
@@ -22,16 +20,19 @@ this.runningIntegrations = {};
 this.clients = [];
 io.listen(3030);
 games.push(new Game({ id: 1234 }));
-games[0].addPlayer({ id: "_eap2lhlwx", name: "Alice" });
-games[0].addPlayer({ id: "_123", name: "Bob" });
-games[0].addPlayer({ id: "_234", name: "Cone" });
-games[0].addPlayer({ id: "_345", name: "Drew" });
+games[0].addPlayer({ id: "_lapwjldrv", name: "Alice" });
 
 io.on("connection", (socket) => {
   logger.verbose(`Socket Connect: ${socket.id}`);
 
+  const updatePlayers = (users, games, game) => {
+    getPlayersByGameId(users, games, game.id).forEach((s) => {
+      const state = game.status(s.id);
+      io.to(s.socket).emit("GAME_STATE", state);
+    });
+  };
+
   socket.on("REGISTER_USER", (token, name) => {
-    console.log("REGISTER USER");
     if (!token) {
       token = generateToken();
     }
@@ -46,14 +47,32 @@ io.on("connection", (socket) => {
     if (game && me) {
       const exists = game.players.map((p) => p.id).indexOf(me.token) > -1;
       if (!exists) {
-        game.players.push({ id: me.token, name: "Testing" });
+        if (game.players.length < 9) {
+          if (!game.started) {
+            game.players.push({ id: me.token, name: "Testing", deck: [] });
+          } else {
+            socket.emit(
+              "USER_MESSAGE",
+              `You can't join game #${gameId} as it has already started.`
+            );
+          }
+        } else {
+          socket.emit(
+            "USER_MESSAGE",
+            `You can't join game #${gameId} as is full up.`
+          );
+        }
       }
-    }
 
-    if (game) {
-      updatePlayersByGameId(users, games, game.id).forEach((s) => {
-        io.to(s).emit("GAME_STATE", game.status(me));
+      getPlayersByGameId(users, games, game.id).forEach((s) => {
+        io.to(s.socket).emit("GAME_STATE", game.status(s.id));
       });
+    } else {
+      if (!game) {
+        socket.emit("USER_MESSAGE", `There is no game #${gameId}!`);
+      } else if (!me) {
+        socket.emit("USER_MESSAGE", `I don't know who you are!`);
+      }
     }
   });
 
@@ -61,41 +80,79 @@ io.on("connection", (socket) => {
     const game = myGame(users, games, socket.id);
     const me = getUserBySocket(users, socket.id);
 
-    if (me.token === game.lead) {
+    if (!game || !me) {
+      socket.emit(
+        "USER_MESSAGE",
+        `There's been an unexpected error! Please refresh. [START_GAME]`
+      );
+    }
+
+    if (me && game && me.token === game.lead) {
       logger.verbose("Start game by" + socket.id);
       game.start();
-      updatePlayersByGameId(users, games, game.id).forEach((s) => {
-        io.to(s).emit("GAME_STATE", game.status(me));
-      });
+
+      updatePlayers(users, games, game);
+    }
+  });
+
+  socket.on("DRAW_CARD", () => {
+    const game = myGame(users, games, socket.id);
+    const me = getUserBySocket(users, socket.id);
+
+    if (!game || !me) {
+      socket.emit(
+        "USER_MESSAGE",
+        `There's been an unexpected error! Please refresh. [DRAW_CARD]`
+      );
+    }
+
+    if (me.token === game.player) {
+      const result = game.drawCard(me);
+      if (game.criteria) {
+        if (!game.criteria) game.shouldIncrementPlayer();
+      }
+
+      if (result) {
+        updatePlayers(users, games, game);
+      }
     }
   });
 
   socket.on("CHOOSE_COLOUR", (colour) => {
     const game = myGame(users, games, socket.id);
     const me = getUserBySocket(users, socket.id);
+    if (!game || !me) {
+      socket.emit(
+        "USER_MESSAGE",
+        `There's been an unexpected error! Please refresh. [CHOOSE_COLOUR]`
+      );
+    }
+
     const name = game.players.filter((p) => p.id === me.token)[0].name;
 
     if (game.setColour(me, colour)) {
       game.addMessage(name, `set the colour to ${colour}`);
-      updatePlayersByGameId(users, games, game.id).forEach((s) => {
-        io.to(s).emit("GAME_STATE", game.status(me));
-      });
+      game.shouldIncrementPlayer();
+      updatePlayers(users, games, game);
     }
   });
 
   socket.on("PLAY_CARD", (card) => {
     const game = myGame(users, games, socket.id);
     const me = getUserBySocket(users, socket.id);
+    if (!game || !me) {
+      socket.emit(
+        "USER_MESSAGE",
+        `There's been an unexpected error! Please refresh. [PLAY_CARD]`
+      );
+    }
+
     const name = game.players.filter((p) => p.id === me.token)[0].name;
 
     const response = game.playCard(card, me.token);
+
     if (response) {
-      game.addMessage(
-        name,
-        `played a ${card.colour !== "NOCOLOUR" ? card.colour : ""} ${
-          card.symbol
-        }`
-      );
+      game.shouldIncrementPlayer();
 
       game.players
         .filter((p) => p.deck.length == 1)
@@ -103,9 +160,7 @@ io.on("connection", (socket) => {
           game.addMessage(false, `${name} has just one card left`)
         );
 
-      updatePlayersByGameId(users, games, game.id).forEach((s) => {
-        io.to(s).emit("GAME_STATE", game.status(me));
-      });
+      updatePlayers(users, games, game);
     }
   });
 

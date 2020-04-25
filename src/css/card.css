@@ -9,14 +9,51 @@
   border: 1px solid black;
   cursor: pointer;
   transition: rotate 0.1s;
+  transition: transform 0.1s;
   background-position-x: 0px;
   background-position-y: 1350px;
+}
+
+.draw .card {
+  background-image: url(../logo.svg);
+  background-size: 100%;
+  background-repeat: no-repeat;
+  background-position: center;
+  animation: colorchange 15s infinite;
+}
+
+.discard {
+  flex-direction: column;
+}
+
+@keyframes colorchange {
+  0% {
+    background-color: red;
+  }
+  25% {
+    background-color: yellow;
+  }
+  50% {
+    background-color: orange;
+  }
+  75% {
+    background-color: yellow;
+  }
+  100% {
+    background-color: red;
+  }
 }
 
 .card:hover {
   z-index: 300;
   box-shadow: 0px 0px 10px -2px black;
-  rotate: 2deg;
+  transform: scale(1.1);
+}
+
+.card:active {
+  z-index: 300;
+  box-shadow: none;
+  transform: scale(1);
 }
 
 .card:not(:first-child) {

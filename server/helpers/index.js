@@ -1,12 +1,16 @@
 var logger = require("../logger");
 
-exports.updatePlayersByGameId = (users, games, gameId) => {
+exports.getPlayersByGameId = (users, games, gameId) => {
   const game = this.getGameById(games, gameId);
   const sockets = [];
+
   game.players.forEach((p) => {
     const s = this.getSocketByToken(users, p.id);
     if (s) {
-      sockets.push(s.socket);
+      sockets.push({
+        socket: s.socket,
+        ...p,
+      });
     }
   });
 
@@ -23,7 +27,19 @@ exports.getUserBySocket = (users, socketId) => {
 };
 
 exports.registerUser = (users, token, socket) => {
-  users.splice(users.map((u) => u.socket).indexOf(socket), 1);
+  let index = -1;
+
+  users.some((u, i) => {
+    if (u.token === token) {
+      index = i;
+    }
+    return index !== -1;
+  });
+
+  if (index > -1) {
+    users.splice(index, 1);
+  }
+
   users.push({
     token,
     socket,
@@ -59,10 +75,5 @@ exports.myGame = (users, games, socketId) => {
       }
     });
   }
-  return game;
-};
-
-exports.filterOtherPlayerCards = (game, me, socket) => {
-  console.log(me);
   return game;
 };

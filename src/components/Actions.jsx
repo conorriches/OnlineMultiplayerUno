@@ -19,7 +19,7 @@ const Actions = ({ game, chooseColour, drawCard }) => {
                 </div>
               </>
             )}
-            {game.criteria.length > 1 &&
+            {game.criteria.length &&
               game.criteria.indexOf("CHOOSECOLOUR") === -1 && (
                 <>
                   <h2 className="subtitle">

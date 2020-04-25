@@ -1,7 +1,7 @@
 import React from "react";
 import "../css/card.css";
 
-const Players = ({ game }) => {
+const Players = ({ game, user }) => {
   return (
     <div className="box players">
       <nav className="pagination" role="navigation" aria-label="pagination">
@@ -20,7 +20,8 @@ const Players = ({ game }) => {
                           game.player.id === p.id ? "is-link" : "is-light"
                         }`}
                       >
-                        {p.name}{" "}
+                        {p.name}
+                        {p.id === user && " (you)"}
                       </span>
                       <span
                         className={`tag is-medium   ${

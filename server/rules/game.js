@@ -29,7 +29,7 @@ class Game {
     this.messages = [];
   }
 
-  status(me) {
+  status(token) {
     return {
       id: this.id,
       started: this.started,
@@ -42,7 +42,12 @@ class Game {
         return {
           id: p.id,
           name: p.name,
-          deck: me.token === p.id ? p.deck : p.deck.map(() => "no peeking!"),
+          deck:
+            token === p.id
+              ? p.deck
+              : p.deck.map(() => {
+                  "no peeking!";
+                }),
         };
       }),
       player: this.players.filter((p) => p.id == this.player)[0] || false,
@@ -63,8 +68,9 @@ class Game {
   }
 
   start() {
-    if (!this.started && this.players.length >= 3) {
+    if (!this.started && this.players.length >= 2) {
       this.started = true;
+
       this.addMessage(
         false,
         `game started with ${this.players.length} players!`
@@ -72,10 +78,11 @@ class Game {
       this.generateDeck();
       this.shuffleDeck();
       this.dealToPlayers();
-      this.firstCard();
       this.firstPlayer();
+      this.firstCard();
+      return true;
     }
-    return this.started;
+    return false;
   }
 
   firstPlayer() {
@@ -83,9 +90,40 @@ class Game {
   }
 
   firstCard() {
-    // ToDo: deal with wildcards
-    const card = this.deck.pop();
-    this.discard.push(card); 
+    let card;
+
+    this.deck.some((c, i) => {
+      if (c.symbol !== P4) {
+        card = c;
+        this.deck.splice(i, 1);
+        this.discard.push(card);
+        return true;
+      }
+      return false;
+    });
+
+    this.addMessage(
+      false,
+      `started game with ${card.colour !== "NOCOLOUR" ? card.colour : ""} ${
+        card.symbol
+      }`
+    );
+
+    if (card.symbol === P2) {
+      this.criteria.push(DC);
+      this.criteria.push(DC);
+    } else if (card.symbol === SD) {
+      this.direction = !this.direction;
+    } else if (card.symbol === SK) {
+      const nextPlayer = this.nextPlayer();
+      this.addMessage(
+        false,
+        `${this.players.filter((p) => nextPlayer)[0].name} skips a go!`
+      );
+      this.shouldIncrementPlayer();
+    } else if (card.symbol === SC) {
+      this.criteria.push(CC);
+    }
   }
 
   dealToPlayers() {
@@ -94,6 +132,7 @@ class Game {
         const card = this.deck.pop();
         this.players[i].deck.push(card);
       }
+      this.players[i].deck.push({ symbol: P4, colour: NC });
     }
     this.addMessage(false, "dealt 7 cards to each player");
   }
@@ -165,6 +204,35 @@ class Game {
     return false;
   }
 
+  drawCard(me) {
+    let res = false;
+    if (me.token === this.player) {
+      this.players.map((p) => {
+        if (p.id === me.token) {
+          if (this.deck.length > 0) {
+            p.deck.push(this.deck.pop());
+            const criteriaToDraw = this.criteria.indexOf(DC);
+            if (criteriaToDraw > -1) {
+              this.criteria.splice(criteriaToDraw, 1);
+            }
+            res = true;
+          }
+        }
+      });
+    }
+
+    if (this.deck.length === 1) {
+      this.shuffleDiscardIntoDraw();
+    }
+    return res;
+  }
+
+  shuffleDiscardIntoDraw() {
+    const old = this.discard.splice(0, this.discard.length - 1);
+    this.deck = this.deck.concat(old);
+    this.shuffleDeck();
+  }
+
   isNumber(c) {
     return numbers.indexOf(c.symbol) > -1;
   }
@@ -175,13 +243,18 @@ class Game {
     return wild.indexOf(c.symbol) > -1;
   }
 
-  matches(ownGo, c1, c2) {
+  matches(user, c1, c2) {
+    if (!c1 || !c2) return false;
+
     // Anyone can jump in on an exact match
     if (c1.colour === c2.colour && c1.symbol === c2.symbol) {
+      if (user !== this.player) {
+        this.player = user;
+      }
       return true;
     }
 
-    if (ownGo) {
+    if (user === this.player) {
       if (this.isNumber(c2)) {
         if (this.isNumber(c1)) {
           // Number on Number
@@ -243,8 +316,9 @@ class Game {
   playCard(card, user) {
     const topCard = this.discard[this.discard.length - 1];
 
-    if (this.matches(user === this.player, topCard, card)) {
-      if (this.criteria.filter((c) => c !== SC).length > 1) {
+    //TODO user === this.player
+    if (this.matches(user, topCard, card)) {
+      if (this.criteria.filter((c) => c !== SC).length) {
         //cards to pick up
         if (card.symbol !== topCard.symbol || card.colour !== topCard.colour) {
           return false;
@@ -254,6 +328,13 @@ class Game {
 
       if (taken) {
         this.discard.push(card);
+
+        this.addMessage(
+          this.getPlayerByToken(user).name,
+          `played a ${card.colour !== "NOCOLOUR" ? card.colour : ""} ${
+            card.symbol
+          }`
+        );
 
         // Add criteria to stack
         if (card.symbol === P4) {
@@ -267,6 +348,13 @@ class Game {
         }
         if (card.symbol == SD) {
           this.direction = !this.direction;
+        }
+        if (card.symbol == SK) {
+          this.addMessage(
+            false,
+            ` ${this.getPlayerByToken(this.nextPlayer()).name} skips a go!`
+          );
+          this.shouldIncrementPlayer();
         }
 
         return true;
@@ -301,6 +389,38 @@ class Game {
     return taken;
   }
 
+  shouldIncrementPlayer() {
+    const card = this.discard[this.discard.length - 1];
+
+    if (!((card.symbol === P4 || card.symbol === SC) && card.colour == NC)) {
+      this.player = this.nextPlayer();
+    }
+  }
+
+  nextPlayer() {
+    let currentIndex;
+
+    this.players.forEach((p, i) => {
+      if (p.id === this.player) {
+        currentIndex = i;
+      }
+    });
+
+    if (this.direction) {
+      if (currentIndex === this.players.length - 1) {
+        return this.players[0].id;
+      } else {
+        return this.players[currentIndex + 1].id;
+      }
+    } else {
+      if (currentIndex === 0) {
+        return this.players[this.players.length - 1].id;
+      } else {
+        return this.players[currentIndex - 1].id;
+      }
+    }
+  }
+
   setColour(me, colour) {
     if (this.player === me.token) {
       const topCard = this.discard[this.discard.length - 1];
@@ -313,6 +433,17 @@ class Game {
       }
     }
     return false;
+  }
+
+  getPlayerByToken(token) {
+    let player;
+    this.players.some((p) => {
+      if (p.id === token) {
+        player = p;
+      }
+      return !!player;
+    });
+    return player;
   }
 }
 

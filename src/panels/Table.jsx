@@ -32,26 +32,31 @@ const Table = ({ game, user, socket }) => {
       <div className="hero-body">
         <div className="columns">
           <div className="players column">
-            <Players game={game} />
+            <Players game={game} user={user} />
           </div>
         </div>
         <div class="columns">
           <div class="column is-two-thirds">
             <Decks game={game} drawCard={drawCard} />
             <div className="actions box">
-              <Actions
-                game={game}
-                chooseColour={chooseColour}
-                drawCard={drawCard}
-              />
+              {game.player.id === user && (
+                <Actions
+                  game={game}
+                  chooseColour={chooseColour}
+                  drawCard={drawCard}
+                />
+              )}
+
               <div className="deck">
                 {myCards.map((c) => {
                   return (
-                    <Card
-                      symbol={c.symbol}
-                      colour={c.colour || ""}
-                      onClick={playCard}
-                    />
+                    c && (
+                      <Card
+                        symbol={c.symbol}
+                        colour={c.colour || ""}
+                        onClick={playCard}
+                      />
+                    )
                   );
                 })}
               </div>

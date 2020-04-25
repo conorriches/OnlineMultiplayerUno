@@ -5,7 +5,6 @@ const Welcome = ({ game, user, socket }) => {
 
   useEffect(() => {
     if (gameId && gameId.length === 4) {
-      console.log("JOINING GAM", gameId);
       socket.emit("JOIN_GAME", gameId);
     }
   }, [gameId]);
