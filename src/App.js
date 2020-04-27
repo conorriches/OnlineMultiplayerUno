@@ -16,8 +16,8 @@ function App() {
   const [gameId, setGameId] = useState(false);
   const [game, setGame] = useState(false);
   const [user, setUser] = useState(false);
-  const [name, setName] = useState("");
-  const [error, setError] = useState(true);
+  const [name, setName] = useState();
+  const [error, setError] = useState(false);
   const [userMessage, setUserMessage] = useState(false);
   const [showModal, setShowModal] = useState(false);
 
@@ -32,18 +32,19 @@ function App() {
     });
     socket.on("connect", (e) => {
       setError(false);
+      setGame(false);
       const playerId = localStorage.getItem("playerId");
       setUser(playerId);
     });
 
     socket.on("GAME_ID", (id) => {
-      console.log("GOT GAME ID", id);
       localStorage.setItem("gameId", id);
       setGameId(id);
     });
 
     socket.on("PLAYER_ID", (obj) => {
       localStorage.setItem("playerId", obj.playerId);
+      setUser(obj.playerId);
     });
 
     socket.on("USER_MESSAGE", (obj) => {
@@ -56,25 +57,24 @@ function App() {
 
     socket.on("GAME_STATE", (state) => {
       setUserMessage(false);
-      console.log("Got state", state);
       state && setGame(state);
     });
 
     socket.on("NAME", (incomingName) => {
       if (incomingName) {
-        localStorage.getItem("name", incomingName);
+        localStorage.setItem("name", incomingName);
         setName(incomingName);
       }
     });
   }, []);
 
   useEffect(() => {
+    const savedName = localStorage.getItem("name");
     const savedPlayerId = localStorage.getItem("playerId");
     const savedGameId = localStorage.getItem("gameId");
-    const savedName = localStorage.getItem("name");
+    setName(savedName);
     setUser(savedPlayerId);
     setGameId(savedGameId);
-    setName(savedName);
   }, []);
 
   useEffect(() => {
@@ -85,6 +85,7 @@ function App() {
 
   useEffect(() => {
     if (gameId) {
+      console.log("AAAAA", name);
       socket.emit("JOIN_GAME", gameId, name);
     }
   }, [gameId]);
@@ -113,14 +114,26 @@ function App() {
                 <div className="buttons">
                   {gameId && (
                     <div className="button is-primary">
-                      <strong> #{gameId}</strong>
+                      <strong>Game #{gameId}</strong>
                     </div>
                   )}
                   {(name || user) && (
                     <div className="button is-warning">
-                      <strong>{name ? name : user}</strong>
+                      <strong>
+                        <span className="icon has-text-dark">
+                          <i className="fas fa-user"></i>
+                        </span>
+                        <span>{name ? name : user}</span>
+                      </strong>
                     </div>
                   )}
+                  <div className="button is-light">
+                    <strong>
+                      <span className="icon has-text-dark">
+                        <i className="fab fa-github"></i>
+                      </span>
+                    </strong>
+                  </div>
                 </div>
               </div>
             </div>
@@ -151,7 +164,14 @@ function App() {
 
         {!error && (
           <>
-            {!game && <Welcome game={game} user={user} socket={socket} />}
+            {!game && (
+              <Welcome
+                game={game}
+                user={user}
+                socket={socket}
+                onGameId={(id) => setGameId(id)}
+              />
+            )}
             {game && game.players && !game.started && (
               <Lobby game={game} user={user} socket={socket} name={name} />
             )}

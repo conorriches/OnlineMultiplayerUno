@@ -19,8 +19,6 @@ const users = [];
 this.runningIntegrations = {};
 this.clients = [];
 io.listen(3030);
-// games.push(new Game({ id: 1234 }));
-// games[0].addPlayer({ id: "_lapwjldrv", name: "Alice" });
 
 io.on("connection", (socket) => {
   logger.verbose(`Socket Connect: ${socket.id}`);
@@ -59,11 +57,14 @@ io.on("connection", (socket) => {
       if (game.players.some((p) => p.name === name)) {
         socket.emit("USER_MESSAGE", {
           code: "E_NAME_EXIST",
-          message: `You can't join game #${game.id} as your player name is already taken (${name}).`,
+          message: `You can't set your player name to ${name} as it is already taken.`,
         });
       } else {
         game.setName(me, name);
         socket.emit("NAME", name);
+        getPlayersByGameId(users, games, game.id).forEach((s) => {
+          io.to(s.socket).emit("GAME_STATE", game.status(s.id));
+        });
       }
     }
   });
@@ -86,7 +87,8 @@ io.on("connection", (socket) => {
                 message: `You can't join game #${gameId} as your player name is already taken (${name}).`,
               });
             } else {
-              game.players.push({ id: me.token, name, deck: [] });
+              game.addPlayer({ id: me.token, name });
+              socket.emit("PLAYER_ID", { playerId: me.token });
             }
           } else {
             socket.emit("USER_MESSAGE", {
@@ -102,6 +104,7 @@ io.on("connection", (socket) => {
         }
       }
 
+      socket.emit("GAME_ID", game.id); //TODO can we remove?
       getPlayersByGameId(users, games, game.id).forEach((s) => {
         io.to(s.socket).emit("GAME_STATE", game.status(s.id));
       });

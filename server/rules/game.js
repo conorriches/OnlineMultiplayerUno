@@ -14,6 +14,18 @@ const symbols = [P2, SK, SD];
 const wild = [P4, SC];
 const colours = ["RED", "GREEN", "BLUE", "YELLOW"];
 const actions = [DC, CC];
+const tempNames = [
+  "Sirius",
+  "Rigel",
+  "Vega",
+  "Pollux",
+  "Acrux",
+  "Deneb",
+  "Alcor",
+  "Altair",
+  "Canopus",
+  "Arcturus",
+];
 
 class Game {
   constructor({ id }) {
@@ -211,9 +223,13 @@ class Game {
   }
 
   addPlayer({ id, name }) {
-    this.addMessage(name, `has joined the game`);
     if (!this.started) {
-      this.players.push({ id, name, deck: [], uno: false });
+      this.players.push({
+        id,
+        name: name || tempNames[this.players.length],
+        deck: [],
+        uno: false,
+      });
       if (this.players.length === 1) {
         this.lead = this.players[0].id;
       }
@@ -236,8 +252,12 @@ class Game {
           p.deck.push(this.deck.pop());
           p.uno = false;
           const criteriaToDraw = this.criteria.indexOf(DC);
+
           if (criteriaToDraw > -1) {
             this.criteria.splice(criteriaToDraw, 1);
+            if (this.criteria.length == 0) {
+              this.shouldIncrementPlayer();
+            }
           }
           res = true;
         }

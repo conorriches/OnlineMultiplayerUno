@@ -21,17 +21,19 @@ const Lobby = ({ game, user, socket, name }) => {
 
   return (
     <>
-      <section className="hero is-primary is-bold">
+      <section className="hero is-info is-bold">
         <div className="hero-body">
           <div className="container">
-            <h1 className="title">Uno</h1>
+            <h1 className="title">
+              <span className="tag is-black is-large">Game #{game.id}</span>
+            </h1>
 
             <h2 className="subtitle">
-              You're in game <span className="tag is-primary">#{game.id}</span>{" "}
-              but the game hasn't started yet. <br />
-              Only the game lead (
+              Welcome to game #{game.id}!<br /> The game hasn't started yet,
+              only the game lead (
               {game.players.filter((p) => p.id === game.lead)[0].name}) can
               start the game.
+              <br />
             </h2>
 
             <div className="columns">
@@ -43,16 +45,17 @@ const Lobby = ({ game, user, socket, name }) => {
                       <div class="tags has-addons">
                         <span
                           className={`tag is-medium is-dark
-                ${p.id == user && "is-warning"}
-                ${p.id == game.lead && "is-danger"}
-                `}
+                            ${p.id == user && "is-warning"}
+                            ${p.id == game.lead && "is-danger"}
+                          `}
                         >
                           <span>
-                            {p.name || p.id}
+                            {p.name}
                             {p.id === user && " (you)"}
                             {p.id === game.lead && " (lead)"}
                           </span>
                         </span>
+                        {console.log("!!", p.id, user)}
                         {p.id == user && (
                           <span className="tag is-medium">
                             <span class="icon is-small" onClick={onEditName}>
@@ -92,9 +95,11 @@ const Lobby = ({ game, user, socket, name }) => {
         show={showModal}
         onContinue={(e) => {
           if (e) {
+            setShowModal(false);
             socket.emit("SET_NAME", e);
           }
         }}
+        onClose={() => setShowModal(false)}
       />
     </>
   );

@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
 
-const Welcome = ({ socket }) => {
+const Welcome = ({ socket, onGameId }) => {
   const [gameId, setGameId] = useState(false);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (gameId && gameId.length === 4) {
-      socket.emit("JOIN_GAME", gameId);
+      onGameId(gameId);
     }
   }, [gameId]);
 
@@ -20,12 +20,13 @@ const Welcome = ({ socket }) => {
   };
 
   return (
-    <section className="hero is-warning is-bold">
+    <section className="hero is-primary is-bold">
       <div className="hero-body">
         <div className="container">
           <h1 className="title">Online Multiplayer Uno</h1>
+          <h2 className="subtitle">With house Rules</h2>
 
-          <article className="message is-info">
+          <article className="message is-link">
             <div className="message-header">
               <p>Join a game</p>
             </div>
@@ -63,7 +64,12 @@ const Welcome = ({ socket }) => {
               <p>Create a game</p>
             </div>
             <div className="message-body">
-              <p>Create a room for your friends to join</p>
+              <div class="level">
+                <p>
+                  Create a new game, then share the game ID for your friends to
+                  join.
+                </p>
+              </div>
               <button
                 className="button is-warning"
                 onClick={() => {

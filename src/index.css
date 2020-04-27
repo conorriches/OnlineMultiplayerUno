@@ -12,31 +12,31 @@ code {
     monospace;
 }
 
-.table.animates .players {
+.table.animate .players {
   opacity: 0;
-  animation: fadein 1s;
+  animation: fadein 2s;
   animation-delay: 0;
   animation-fill-mode: forwards;
 }
 
-.table.animates .decks {
+.table.animate .decks {
   opacity: 0;
-  animation: fadein 1s;
-  animation-delay: 2s;
+  animation: fadein 2s;
+  animation-delay: 0s;
   animation-fill-mode: forwards;
 }
 
-.table.animatse .actions {
+.table.animate .actions {
   opacity: 0;
   animation: fadein 1s;
   animation-delay: 0s;
   animation-fill-mode: forwards;
 }
 
-.table.animatse .events {
+.table.animate .events {
   opacity: 0;
   animation: fadein 1s;
-  animation-delay: 1s;
+  animation-delay: 0.5s;
   animation-fill-mode: forwards;
 }
 
