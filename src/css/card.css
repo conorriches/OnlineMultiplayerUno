@@ -22,7 +22,8 @@
   animation: colorchange 15s infinite;
 }
 
-.discard {
+.discard,
+.draw {
   flex-direction: column;
 }
 
@@ -56,7 +57,7 @@
   transform: scale(1);
 }
 
-.card:not(:first-child) {
+.card {
   margin-left: -25px;
 }
 

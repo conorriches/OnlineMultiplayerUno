@@ -7,6 +7,8 @@ import Actions from "../components/Actions";
 import Messages from "../components/Messages";
 
 const Table = ({ game, user, socket }) => {
+  const [sort, setSort] = useState(false);
+
   const player = game.players.filter((p) => p.id === user);
   const myCards = !!player.length ? player[0].deck : [];
 
@@ -23,6 +25,18 @@ const Table = ({ game, user, socket }) => {
 
   const chooseColour = (colour) => {
     socket.emit("CHOOSE_COLOUR", colour);
+  };
+
+  const uno = () => {
+    socket.emit("DECLARE_UNO");
+  };
+
+  const challenge = () => {
+    socket.emit("CHALLENGE");
+  };
+
+  const callout = () => {
+    socket.emit("CALLOUT");
   };
 
   return (
@@ -44,26 +58,83 @@ const Table = ({ game, user, socket }) => {
                   game={game}
                   chooseColour={chooseColour}
                   drawCard={drawCard}
+                  onUno={uno}
+                  onChallenge={challenge}
+                  onCallout={callout}
                 />
               )}
 
               <div className="deck">
-                {myCards.map((c) => {
-                  return (
-                    c && (
-                      <Card
-                        symbol={c.symbol}
-                        colour={c.colour || ""}
-                        onClick={playCard}
-                      />
-                    )
-                  );
-                })}
+                <div class="columns">
+                  <div class="column">
+                    {myCards
+                      .concat()
+                      .sort((a, b) => {
+                        if (!sort) {
+                          return 0;
+                        }
+                        if (sort === "COLOUR") {
+                          return a.colour > b.colour;
+                        }
+                        if (sort === "SYMBOL") {
+                          return a.symbol > b.symbol;
+                        }
+                      })
+                      .map((c) => {
+                        return (
+                          c && (
+                            <Card
+                              symbol={c.symbol}
+                              colour={c.colour || ""}
+                              onClick={playCard}
+                            />
+                          )
+                        );
+                      })}
+                  </div>
+                </div>
+              </div>
+              <div class="control" style={{ display: "none" }}>
+                Sort:
+                <label class="radio">
+                  <input
+                    type="radio"
+                    name="foobar"
+                    onClick={() => setSort("SYMBOL")}
+                    {...{ checked: sort === "SYMBOL" }}
+                  />
+                  Symbol
+                </label>
+                <label class="radio">
+                  <input
+                    type="radio"
+                    name="foobar"
+                    onClick={() => setSort("COLOUR")}
+                    {...{ checked: sort === "COLOUR" }}
+                  />
+                  Colour
+                </label>
+                <label class="radio">
+                  <input
+                    type="radio"
+                    name="foobar"
+                    onClick={() => setSort(false)}
+                    {...{ checked: !sort }}
+                  />
+                  None
+                </label>
               </div>
             </div>
           </div>
           <div class="events column">
-            <Messages game={game} />
+            <Messages
+              game={game}
+              user={user}
+              onUno={uno}
+              onChallenge={challenge}
+              onCallout={callout}
+            />
+            {console.log("===", game.players)}
           </div>
         </div>
       </div>

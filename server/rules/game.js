@@ -27,6 +27,7 @@ class Game {
     this.criteria = [];
     this.actions = [];
     this.messages = [];
+    this.challenged = false;
   }
 
   status(token) {
@@ -48,6 +49,7 @@ class Game {
               : p.deck.map(() => {
                   "no peeking!";
                 }),
+          uno: p.uno,
         };
       }),
       player: this.players.filter((p) => p.id == this.player)[0] || false,
@@ -58,6 +60,18 @@ class Game {
 
   get latestCard() {
     return this.discard[this.discard.length - 1];
+  }
+
+  setName(me, name) {
+    let toReturn = false;
+    this.players = this.players.map((p) => {
+      if (p.id === me.token) {
+        p.name = name;
+        toReturn = true;
+      }
+      return p;
+    });
+    return toReturn;
   }
 
   addMessage(user, message) {
@@ -76,6 +90,13 @@ class Game {
         `game started with ${this.players.length} players!`
       );
       this.generateDeck();
+      if (this.players.count > 4) {
+        this.generateDeck();
+      }
+      if (this.players.count > 8) {
+        this.generateDeck();
+      }
+
       this.shuffleDeck();
       this.dealToPlayers();
       this.firstPlayer();
@@ -132,7 +153,6 @@ class Game {
         const card = this.deck.pop();
         this.players[i].deck.push(card);
       }
-      this.players[i].deck.push({ symbol: P4, colour: NC });
     }
     this.addMessage(false, "dealt 7 cards to each player");
   }
@@ -144,8 +164,6 @@ class Game {
       let j = Math.floor(Math.random() * (i + 1));
       [this.deck[i], this.deck[j]] = [this.deck[j], this.deck[i]];
     }
-
-    // TODO, what if top card is a wildcard?
   }
 
   generateDeck() {
@@ -204,22 +222,27 @@ class Game {
     return false;
   }
 
-  drawCard(me) {
+  removePlayer({ id }) {
+    this.addMessage(id, `has left the game`);
+
+    this.players = this.players.filter((p) => p.id === id);
+  }
+
+  drawCard(me, force = false) {
     let res = false;
-    if (me.token === this.player) {
-      this.players.map((p) => {
-        if (p.id === me.token) {
-          if (this.deck.length > 0) {
-            p.deck.push(this.deck.pop());
-            const criteriaToDraw = this.criteria.indexOf(DC);
-            if (criteriaToDraw > -1) {
-              this.criteria.splice(criteriaToDraw, 1);
-            }
-            res = true;
+    this.players.map((p) => {
+      if (p.id === me || force) {
+        if (this.deck.length > 0) {
+          p.deck.push(this.deck.pop());
+          p.uno = false;
+          const criteriaToDraw = this.criteria.indexOf(DC);
+          if (criteriaToDraw > -1) {
+            this.criteria.splice(criteriaToDraw, 1);
           }
+          res = true;
         }
-      });
-    }
+      }
+    });
 
     if (this.deck.length === 1) {
       this.shuffleDiscardIntoDraw();
@@ -229,7 +252,13 @@ class Game {
 
   shuffleDiscardIntoDraw() {
     const old = this.discard.splice(0, this.discard.length - 1);
-    this.deck = this.deck.concat(old);
+    this.deck = this.deck.concat(old).map((c) => {
+      if (c) {
+        if ([P4, SC].indexOf(c.symbol) > -1) {
+          c.colour = NC;
+        }
+      }
+    });
     this.shuffleDeck();
   }
 
@@ -243,18 +272,15 @@ class Game {
     return wild.indexOf(c.symbol) > -1;
   }
 
-  matches(user, c1, c2) {
+  matches(ownGo, c1, c2) {
     if (!c1 || !c2) return false;
 
     // Anyone can jump in on an exact match
     if (c1.colour === c2.colour && c1.symbol === c2.symbol) {
-      if (user !== this.player) {
-        this.player = user;
-      }
       return true;
     }
 
-    if (user === this.player) {
+    if (ownGo) {
       if (this.isNumber(c2)) {
         if (this.isNumber(c1)) {
           // Number on Number
@@ -317,7 +343,10 @@ class Game {
     const topCard = this.discard[this.discard.length - 1];
 
     //TODO user === this.player
-    if (this.matches(user, topCard, card)) {
+    if (this.matches(user === this.player, topCard, card)) {
+      if (user !== this.player) {
+        this.player = user;
+      }
       if (this.criteria.filter((c) => c !== SC).length) {
         //cards to pick up
         if (card.symbol !== topCard.symbol || card.colour !== topCard.colour) {
@@ -327,6 +356,7 @@ class Game {
       const taken = this.takeCardFromPlayer(card, user);
 
       if (taken) {
+        this.challenged = false;
         this.discard.push(card);
 
         this.addMessage(
@@ -397,7 +427,7 @@ class Game {
     }
   }
 
-  nextPlayer() {
+  playerToSide(inDirectionOfPlay) {
     let currentIndex;
 
     this.players.forEach((p, i) => {
@@ -406,7 +436,7 @@ class Game {
       }
     });
 
-    if (this.direction) {
+    if (inDirectionOfPlay ? this.direction : !this.direction) {
       if (currentIndex === this.players.length - 1) {
         return this.players[0].id;
       } else {
@@ -419,6 +449,14 @@ class Game {
         return this.players[currentIndex - 1].id;
       }
     }
+  }
+
+  nextPlayer() {
+    return this.playerToSide(true);
+  }
+
+  previousPlayer() {
+    return this.playerToSide(false);
   }
 
   setColour(me, colour) {
@@ -444,6 +482,69 @@ class Game {
       return !!player;
     });
     return player;
+  }
+
+  declareUno(me) {
+    let changed = false;
+    this.players = this.players.map((p) => {
+      if (p.id === me.token && p.deck.length === 1) {
+        p.uno = true;
+        changed = true;
+      }
+      return p;
+    });
+    return changed;
+  }
+
+  challenge(me) {
+    const previousPlayer = this.previousPlayer();
+
+    this.players = this.players.map((p) => {
+      if (
+        p.id === previousPlayer &&
+        this.discard[this.discard.length - 1].symbol === P4 &&
+        !this.challenged
+      ) {
+        this.addMessage(false, "CHALLENGE!");
+        const prevCard = this.discard[this.discard.length - 2];
+        const wasMatch = p.deck.some(
+          (c) => this.matches(true, prevCard, c) && c.symbol !== P4
+        );
+
+        if (!wasMatch) {
+          this.criteria = this.criteria.concat([DC, DC]);
+          this.addMessage(
+            false,
+            "Challenge rejected - plaintiff must now draw 6 cards instead of 4."
+          );
+        } else {
+          this.addMessage(
+            false,
+            "Challenge successful - defendant has been handed 4 cards."
+          );
+          this.criteria = [];
+          // give four cards to accuser
+          for (let i = 0; i < 4; i++) {
+            this.drawCard(previousPlayer.token, true);
+          }
+        }
+        this.challenged = true;
+      }
+
+      return p;
+    });
+    return true;
+  }
+
+  callout() {
+    this.players = this.players.map((p) => {
+      if (p.deck.length === 1 && p.uno === false) {
+        for (let i = 0; i < 4; i++) {
+          this.drawCard(p.id, true);
+        }
+      }
+      return p;
+    });
   }
 }
 

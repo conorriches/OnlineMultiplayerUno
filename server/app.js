@@ -19,8 +19,8 @@ const users = [];
 this.runningIntegrations = {};
 this.clients = [];
 io.listen(3030);
-games.push(new Game({ id: 1234 }));
-games[0].addPlayer({ id: "_lapwjldrv", name: "Alice" });
+// games.push(new Game({ id: 1234 }));
+// games[0].addPlayer({ id: "_lapwjldrv", name: "Alice" });
 
 io.on("connection", (socket) => {
   logger.verbose(`Socket Connect: ${socket.id}`);
@@ -32,6 +32,11 @@ io.on("connection", (socket) => {
     });
   };
 
+  const generateId = () => {
+    // TODO: is there a clash?
+    return Math.floor(1000 + Math.random() * 9000);
+  };
+
   socket.on("REGISTER_USER", (token, name) => {
     if (!token) {
       token = generateToken();
@@ -40,7 +45,30 @@ io.on("connection", (socket) => {
     socket.emit("PLAYER_ID", { playerId: token });
   });
 
-  socket.on("JOIN_GAME", (gameId) => {
+  socket.on("CREATE_GAME", () => {
+    const id = generateId();
+    games.push(new Game({ id }));
+    socket.emit("GAME_ID", id);
+  });
+
+  socket.on("SET_NAME", (name) => {
+    const game = myGame(users, games, socket.id);
+    const me = getUserBySocket(users, socket.id);
+
+    if (game && me) {
+      if (game.players.some((p) => p.name === name)) {
+        socket.emit("USER_MESSAGE", {
+          code: "E_NAME_EXIST",
+          message: `You can't join game #${game.id} as your player name is already taken (${name}).`,
+        });
+      } else {
+        game.setName(me, name);
+        socket.emit("NAME", name);
+      }
+    }
+  });
+
+  socket.on("JOIN_GAME", (gameId, name) => {
     const me = getUserBySocket(users, socket.id);
     const game = getGameById(games, gameId);
 
@@ -49,18 +77,28 @@ io.on("connection", (socket) => {
       if (!exists) {
         if (game.players.length < 9) {
           if (!game.started) {
-            game.players.push({ id: me.token, name: "Testing", deck: [] });
+            if (game.players.length === 0) {
+              game.lead = me.token;
+            }
+            if (game.players.some((p) => p.name === name)) {
+              socket.emit("USER_MESSAGE", {
+                code: "E_NAME_EXIST",
+                message: `You can't join game #${gameId} as your player name is already taken (${name}).`,
+              });
+            } else {
+              game.players.push({ id: me.token, name, deck: [] });
+            }
           } else {
-            socket.emit(
-              "USER_MESSAGE",
-              `You can't join game #${gameId} as it has already started.`
-            );
+            socket.emit("USER_MESSAGE", {
+              code: "E_STARTED",
+              message: `You can't join game #${gameId} as it has already started.`,
+            });
           }
         } else {
-          socket.emit(
-            "USER_MESSAGE",
-            `You can't join game #${gameId} as is full up.`
-          );
+          socket.emit("USER_MESSAGE", {
+            code: "E_FULL",
+            message: `You can't join game #${gameId} as is full up.`,
+          });
         }
       }
 
@@ -69,9 +107,15 @@ io.on("connection", (socket) => {
       });
     } else {
       if (!game) {
-        socket.emit("USER_MESSAGE", `There is no game #${gameId}!`);
+        socket.emit("USER_MESSAGE", {
+          code: "E_NO_GAME",
+          message: `There is no game #${gameId}!`,
+        });
       } else if (!me) {
-        socket.emit("USER_MESSAGE", `I don't know who you are!`);
+        socket.emit("USER_MESSAGE", {
+          code: "E_NO_YOU",
+          message: `I don't know who you are!`,
+        });
       }
     }
   });
@@ -81,10 +125,10 @@ io.on("connection", (socket) => {
     const me = getUserBySocket(users, socket.id);
 
     if (!game || !me) {
-      socket.emit(
-        "USER_MESSAGE",
-        `There's been an unexpected error! Please refresh. [START_GAME]`
-      );
+      return socket.emit("USER_MESSAGE", {
+        code: "E_START",
+        message: `There's been an unexpected error! Please refresh. [START_GAME]`,
+      });
     }
 
     if (me && game && me.token === game.lead) {
@@ -100,14 +144,14 @@ io.on("connection", (socket) => {
     const me = getUserBySocket(users, socket.id);
 
     if (!game || !me) {
-      socket.emit(
-        "USER_MESSAGE",
-        `There's been an unexpected error! Please refresh. [DRAW_CARD]`
-      );
+      return socket.emit("USER_MESSAGE", {
+        code: "E_DRAW",
+        message: `There's been an unexpected error! Please refresh. [DRAW_CARD]`,
+      });
     }
 
     if (me.token === game.player) {
-      const result = game.drawCard(me);
+      const result = game.drawCard(me.token);
       if (game.criteria) {
         if (!game.criteria) game.shouldIncrementPlayer();
       }
@@ -122,10 +166,10 @@ io.on("connection", (socket) => {
     const game = myGame(users, games, socket.id);
     const me = getUserBySocket(users, socket.id);
     if (!game || !me) {
-      socket.emit(
-        "USER_MESSAGE",
-        `There's been an unexpected error! Please refresh. [CHOOSE_COLOUR]`
-      );
+      socket.emit("USER_MESSAGE", {
+        code: "E_COLOUR",
+        message: `There's been an unexpected error! Please refresh. [CHOOSE_COLOUR]`,
+      });
     }
 
     const name = game.players.filter((p) => p.id === me.token)[0].name;
@@ -141,10 +185,10 @@ io.on("connection", (socket) => {
     const game = myGame(users, games, socket.id);
     const me = getUserBySocket(users, socket.id);
     if (!game || !me) {
-      socket.emit(
-        "USER_MESSAGE",
-        `There's been an unexpected error! Please refresh. [PLAY_CARD]`
-      );
+      return socket.emit("USER_MESSAGE", {
+        code: "E_PLAY",
+        message: `There's been an unexpected error! Please refresh. [PLAY_CARD]`,
+      });
     }
 
     const name = game.players.filter((p) => p.id === me.token)[0].name;
@@ -161,6 +205,50 @@ io.on("connection", (socket) => {
         );
 
       updatePlayers(users, games, game);
+    }
+  });
+
+  socket.on("DECLARE_UNO", () => {
+    const game = myGame(users, games, socket.id);
+    const me = getUserBySocket(users, socket.id);
+    if (!game || !me) {
+      socket.emit("USER_MESSAGE", {
+        code: "E_DECLARE",
+        message: `There's been an unexpected error! Please refresh. [PLAY_CARD]`,
+      });
+      return;
+    }
+
+    game.declareUno(me) && updatePlayers(users, games, game);
+  });
+
+  socket.on("CHALLENGE", () => {
+    const game = myGame(users, games, socket.id);
+    const me = getUserBySocket(users, socket.id);
+    if (!game || !me) {
+      socket.emit("USER_MESSAGE", {
+        code: "E_CHALLENGE",
+        message: `There's been an unexpected error! Please refresh. [PLAY_CARD]`,
+      });
+      return;
+    }
+
+    game.challenge(me) && updatePlayers(users, games, game);
+  });
+
+  // TODO - why this no work
+  socket.on("CALLOUT", () => {
+    const game = myGame(users, games, socket.id);
+    if (game) {
+      game.callout();
+    }
+  });
+
+  socket.on("EXIT_GAME", () => {
+    const game = myGame(users, games, socket.id);
+    const me = getUserBySocket(users, socket.id);
+    if (game && me) {
+      game.removePlayer(me.token);
     }
   });
 

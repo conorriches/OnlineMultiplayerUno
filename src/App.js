@@ -7,14 +7,19 @@ import "bulma";
 import Welcome from "./panels/Welcome";
 import Lobby from "./panels/Lobby";
 import Table from "./panels/Table";
+import Summary from "./panels/Summary";
+import UsernameModal from "./components/UsernameModal";
 
 const socket = openSocket(`localhost:3030`);
 
 function App() {
+  const [gameId, setGameId] = useState(false);
   const [game, setGame] = useState(false);
   const [user, setUser] = useState(false);
+  const [name, setName] = useState("");
   const [error, setError] = useState(true);
   const [userMessage, setUserMessage] = useState(false);
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     socket.on("error", (e) => {
@@ -31,36 +36,68 @@ function App() {
       setUser(playerId);
     });
 
+    socket.on("GAME_ID", (id) => {
+      console.log("GOT GAME ID", id);
+      localStorage.setItem("gameId", id);
+      setGameId(id);
+    });
+
     socket.on("PLAYER_ID", (obj) => {
       localStorage.setItem("playerId", obj.playerId);
     });
 
     socket.on("USER_MESSAGE", (obj) => {
-      setUserMessage(obj);
+      if (obj.code === "E_NO_GAME") {
+        localStorage.removeItem("gameId");
+        setGameId(false);
+      }
+      setUserMessage(obj.message);
     });
 
     socket.on("GAME_STATE", (state) => {
       setUserMessage(false);
+      console.log("Got state", state);
       state && setGame(state);
+    });
+
+    socket.on("NAME", (incomingName) => {
+      if (incomingName) {
+        localStorage.getItem("name", incomingName);
+        setName(incomingName);
+      }
     });
   }, []);
 
   useEffect(() => {
-    const playerId = localStorage.getItem("playerId");
-    setUser(playerId);
+    const savedPlayerId = localStorage.getItem("playerId");
+    const savedGameId = localStorage.getItem("gameId");
+    const savedName = localStorage.getItem("name");
+    setUser(savedPlayerId);
+    setGameId(savedGameId);
+    setName(savedName);
   }, []);
 
   useEffect(() => {
     if (user) {
       socket.emit("REGISTER_USER", user);
-      //socket.emit("JOIN_GAME", 1234);
-      //socket.emit("START_GAME");
     }
   }, [user]);
 
+  useEffect(() => {
+    if (gameId) {
+      socket.emit("JOIN_GAME", gameId, name);
+    }
+  }, [gameId]);
+
+  const exitGame = () => {
+    if (!game) {
+      socket.emit("EXIT_GAME", game.id);
+    }
+  };
+
   return (
     <>
-      <div className="container">
+      <div className="container is-widescreen">
         <nav className="navbar" role="navigation" aria-label="main navigation">
           <div id="navbarBasicExample" className="navbar-menu">
             <div className="navbar-brand">
@@ -74,18 +111,14 @@ function App() {
             <div className="navbar-end">
               <div className="navbar-item">
                 <div className="buttons">
-                  {game.id && (
+                  {gameId && (
                     <div className="button is-primary">
-                      <strong> #{game.id}</strong>
+                      <strong> #{gameId}</strong>
                     </div>
                   )}
-                  {user && (
+                  {(name || user) && (
                     <div className="button is-warning">
-                      <strong>
-                        {game
-                          ? game.players.filter((p) => p.id === user)[0].name
-                          : user}
-                      </strong>
+                      <strong>{name ? name : user}</strong>
                     </div>
                   )}
                 </div>
@@ -93,6 +126,10 @@ function App() {
             </div>
           </div>
         </nav>
+
+        {game.started && game.players.some((p) => p.deck.length === 0) && (
+          <Summary game={game} onClose={exitGame} />
+        )}
 
         {error && (
           <div className="notification is-danger">
@@ -116,7 +153,7 @@ function App() {
           <>
             {!game && <Welcome game={game} user={user} socket={socket} />}
             {game && game.players && !game.started && (
-              <Lobby game={game} user={user} socket={socket} />
+              <Lobby game={game} user={user} socket={socket} name={name} />
             )}
             {game && game.players && game.started && (
               <Table game={game} user={user} socket={socket} />

@@ -52,6 +52,7 @@ code {
 .deck {
   background: white;
   display: inline-block;
+  margin-left: 25px;
 }
 
 .deck.disabled {
@@ -62,6 +63,10 @@ code {
   cursor: no-drop;
 }
 
+.decks .card {
+  margin: 1em 0;
+}
+
 .select-colour {
   margin: 0 0.5rem !important;
 }
@@ -70,19 +75,19 @@ code {
   cursor: pointer;
 }
 .select-colour.RED {
-  background: red;
+  background: #ff5555;
   color: black;
 }
 .select-colour.GREEN {
-  background: green;
+  background: #55aa55;
   color: black;
 }
 .select-colour.BLUE {
-  background: blue;
+  background: #5555ff;
   color: white;
 }
 .select-colour.YELLOW {
-  background: yellow;
+  background: #ffaa00;
   color: black;
 }
 

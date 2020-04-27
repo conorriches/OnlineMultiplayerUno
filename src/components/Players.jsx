@@ -4,55 +4,99 @@ import "../css/card.css";
 const Players = ({ game, user }) => {
   return (
     <div className="box players">
-      <nav className="pagination" role="navigation" aria-label="pagination">
-        <ul className="pagination-list">
-          {game.players
-            .sort((a, b) => {
-              return !game.direction;
-            })
-            .map((p, i) => (
-              <li key={p.id}>
-                <div class="level">
-                  <div class="level-item">
-                    <div className="tags has-addons">
-                      <span
-                        className={`tag is-medium ${
-                          game.player.id === p.id ? "is-link" : "is-light"
-                        }`}
-                      >
-                        {p.name}
-                        {p.id === user && " (you)"}
-                      </span>
-                      <span
-                        className={`tag is-medium   ${
-                          game.player.id === p.id ? "is-warning" : "is-warning"
-                        }`}
-                      >
-                        {p.uno && (
-                          <span className="icon has-text-danger">
+      <div class="level">
+        {game.players
+          .sort((a, b) => {
+            return !game.direction;
+          })
+          .map((p, i) => (
+            <>
+              <div className="level-item is-narrow player" key={p.id}>
+                <div className="tags has-addons">
+                  <span
+                    className={`tag is-medium ${
+                      p.id === user && p.id === game.player.id
+                        ? "is-success"
+                        : "is-dark"
+                    }`}
+                  >
+                    <div className="columns">
+                      {p.id === user ? (
+                        <div className="column">
+                          <span className="icon has-text-light">
+                            <i className="fas fa-user"></i>
+                          </span>
+                        </div>
+                      ) : (
+                        ""
+                      )}
+                      {p.id === game.player.id ? (
+                        <div className="column">
+                          <span className="icon has-text-warning">
+                            <i className="fas fa-gamepad"></i>
+                          </span>
+                        </div>
+                      ) : (
+                        ""
+                      )}
+                      <div className="column">{p.name}</div>
+                    </div>
+                  </span>
+                  <span
+                    className={`tag is-medium ${
+                      p.uno ? "is-danger" : "is-black"
+                    }`}
+                  >
+                    <div className="columns">
+                      {p.uno && (
+                        <div className="column">
+                          <span
+                            className={`icon  ${
+                              p.uno ? "has-text-light" : "has-text-danger"
+                            }`}
+                          >
                             <i className="fas fa-bullhorn"></i>
                           </span>
-                        )}
-                        {p.deck.length}
-                        {p.deck.length === 1 && (
-                          <span className="icon has-text-danger">
+                        </div>
+                      )}
+                      <div className="column">{p.deck.length}</div>
+
+                      {p.deck.length === 1 && (
+                        <div className="column">
+                          <span
+                            className={`icon  ${
+                              p.uno ? "has-text-light" : "has-text-danger"
+                            }`}
+                          >
                             <i className="fas fa-exclamation"></i>
                           </span>
-                        )}
-                      </span>
+                        </div>
+                      )}
                     </div>
-
-                    <span className="icon has-text-success">
-                      <i className="fas fa-arrow-right"></i>
-                    </span>
-                  </div>
+                  </span>
                 </div>
-              </li>
-            ))}
-        </ul>
-        <a className="pagination-previous is-current">Help</a>
-        <a className="pagination-next">Rules</a>
-      </nav>
+              </div>
+              <div className="level-item is-narrow">
+                {i < game.players.length - 1 ? (
+                  <span className="icon">
+                    <i className="fas fa-arrow-right"></i>
+                  </span>
+                ) : (
+                  <span className="icon">
+                    <i className="fas fa-redo"></i>
+                  </span>
+                )}
+              </div>
+            </>
+          ))}
+
+        <div class="level-item level-right">
+          <a className="pagination-previous is-current">Help</a>
+        </div>
+        <div class="level-item level-right">
+          <a className="pagination-next">Rules</a>
+        </div>
+      </div>
     </div>
   );
 };
