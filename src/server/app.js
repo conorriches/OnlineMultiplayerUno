@@ -16,7 +16,7 @@ app.get("/", function (req, res) {
   }
 });
 
-app.listen(process.env.PORT, () =>
+server.listen(process.env.PORT, () =>
   console.log(
     `Online Multiplayer Uno is running on port http://localhost:${process.env.PORT}`
   )
