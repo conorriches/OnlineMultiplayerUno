@@ -38,8 +38,8 @@ const Game = require("./game/game");
 const games = [];
 const users = [];
 
-io.origins("*:*");
-io.listen(config.sockets.port);
+//io.origins("*:*");
+//io.listen(config.sockets.port);
 
 io.on("connection", (socket) => {
   logger.verbose(`Socket Connect: ${socket.id}`);
