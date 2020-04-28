@@ -21,7 +21,7 @@
     "winston": "^3.2.1"
   },
   "scripts": {
-    "start": "pm2 start ecosystem.config.js --env production",
+    "start": "pm2-runtime start ecosystem.config.js --env production",
     "start:dev": "pm2 start ecosystem.config.js --env development",
     "build": "react-scripts build",
     "client:start": "react-scripts start",
