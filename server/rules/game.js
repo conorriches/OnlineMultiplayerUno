@@ -165,6 +165,7 @@ class Game {
         const card = this.deck.pop();
         this.players[i].deck.push(card);
       }
+      this.players[i].deck.push({ symbol: 0, colour: "RED" });
     }
     this.addMessage(false, "dealt 7 cards to each player");
   }
@@ -385,6 +386,22 @@ class Game {
             card.symbol
           }`
         );
+
+        // Actions
+        if (card.symbol === 0) {
+          this.addMessage(false, `Rotating cards in direction of play`);
+          const decks = this.players.map((p) => p.deck);
+
+          if (this.direction) {
+            decks.unshift(decks.pop());
+          } else {
+            decks.push(decks.shift());
+          }
+
+          decks.forEach((d, i) => {
+            this.players[i].deck = d;
+          });
+        }
 
         // Add criteria to stack
         if (card.symbol === P4) {

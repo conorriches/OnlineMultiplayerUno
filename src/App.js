@@ -19,7 +19,6 @@ function App() {
   const [name, setName] = useState();
   const [error, setError] = useState(false);
   const [userMessage, setUserMessage] = useState(false);
-  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     socket.on("error", (e) => {
@@ -33,6 +32,7 @@ function App() {
     socket.on("connect", (e) => {
       setError(false);
       setGame(false);
+
       const playerId = localStorage.getItem("playerId");
       setUser(playerId);
     });
@@ -94,6 +94,9 @@ function App() {
     if (!game) {
       socket.emit("EXIT_GAME", game.id);
     }
+    localStorage.removeItem("gameId");
+    setGame(false);
+    setGameId(false);
   };
 
   return (
@@ -173,7 +176,13 @@ function App() {
               />
             )}
             {game && game.players && !game.started && (
-              <Lobby game={game} user={user} socket={socket} name={name} />
+              <Lobby
+                game={game}
+                user={user}
+                socket={socket}
+                name={name}
+                onLeave={exitGame}
+              />
             )}
             {game && game.players && game.started && (
               <Table game={game} user={user} socket={socket} />

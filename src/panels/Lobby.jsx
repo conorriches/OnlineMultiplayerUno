@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 
 import UsernameModal from "../components/UsernameModal";
 
-const Lobby = ({ game, user, socket, name }) => {
+const Lobby = ({ game, user, socket, name, onLeave }) => {
   const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
@@ -17,7 +17,7 @@ const Lobby = ({ game, user, socket, name }) => {
     setShowModal(true);
   };
 
-  const disableStart = { disabled: game.players.length < 3 };
+  const disableStart = { disabled: game.players.length < 2 };
 
   return (
     <>
@@ -63,6 +63,11 @@ const Lobby = ({ game, user, socket, name }) => {
                             </span>
                           </span>
                         )}
+                        <span className="tag is-medium">
+                          <span class="icon is-small" onClick={onLeave}>
+                            <i class="fas fa-ban"></i>
+                          </span>
+                        </span>
                       </div>
                     </div>
                   ))}
