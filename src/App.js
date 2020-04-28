@@ -11,7 +11,7 @@ import Summary from "./panels/Summary";
 import "bulma";
 
 const socket = openSocket(
-  `${config.sockets.protocol}://${config.sockets.host}:${config.sockets.port}`
+  `${config.sockets.protocol}://${config.sockets.host}`
 );
 
 function App() {
