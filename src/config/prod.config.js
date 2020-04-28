@@ -4,7 +4,7 @@ module.exports = {
   },
   sockets: {
     protocol: "ws",
-    host: "localhost",
+    host: "multiplayer-uno.herokuapp.com",
     port: "3030",
   },
   players: {
