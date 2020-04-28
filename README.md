@@ -29,7 +29,7 @@ House rules are enforced!
   - under the hood this runs `pm2 [start|restart|stop] ecosystem.config.js --env production`
   - this will keep the server up and running
   - run `pm2 list` to keep an eye for any restarts (indicating an error)
-- Visit the URL - default is `localhost:5000`
+- Visit the URL - default is `localhost:5000` for dev and port 80 for production.
 
 ## Development
 

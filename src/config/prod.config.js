@@ -1,6 +1,6 @@
 module.exports = {
   server: {
-    port: "5000",
+    port: "80",
   },
   sockets: {
     protocol: "ws",
