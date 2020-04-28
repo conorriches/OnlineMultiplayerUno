@@ -21,10 +21,12 @@
     "winston": "^3.2.1"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "pm2 start ecosystem.config.js --env production",
+    "start:dev": "pm2 start ecosystem.config.js --env development",
     "build": "react-scripts build",
-    "test": "jest --watch",
-    "eject": "react-scripts eject"
+    "client:start": "react-scripts start",
+    "client:test": "jest --watch",
+    "client:eject": "react-scripts eject"
   },
   "eslintConfig": {
     "extends": "react-app"
