@@ -3,9 +3,8 @@ module.exports = {
     port: "3000",
   },
   sockets: {
-    protocol: "http://",
+    protocol: "http",
     host: "multiplayer-uno.herokuapp.com",
-    port: "3030",
   },
   players: {
     minimum: 3,

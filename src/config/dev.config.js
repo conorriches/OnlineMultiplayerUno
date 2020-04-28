@@ -1,11 +1,10 @@
 module.exports = {
   server: {
-    port: "5000",
+    port: "3000",
   },
   sockets: {
-    protocol: "ws",
+    protocol: "http",
     host: "localhost",
-    port: "3030",
   },
   players: {
     minimum: 3,

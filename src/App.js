@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import openSocket from "socket.io-client";
+import io from "socket.io-client";
 
 import config from "./config";
 import { C, E } from "./server/constants";
@@ -10,9 +10,7 @@ import Summary from "./panels/Summary";
 
 import "bulma";
 
-const socket = openSocket(
-  `${config.sockets.protocol}://${config.sockets.host}`
-);
+const socket = io(`${config.sockets.protocol}://${config.sockets.host}`);
 
 function App() {
   const [gameId, setGameId] = useState(false);
