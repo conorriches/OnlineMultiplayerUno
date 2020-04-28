@@ -21,7 +21,7 @@ const Lobby = ({ game, user, socket, name, onLeave }) => {
 
   return (
     <>
-      <section className="hero is-info is-bold">
+      <section className="hero is-info is-bold lobby">
         <div className="hero-body">
           <div className="container">
             <h1 className="title">
@@ -39,7 +39,7 @@ const Lobby = ({ game, user, socket, name, onLeave }) => {
             <div className="columns">
               <div className="column is-two-thirds">
                 <h2 className="subtitle">Current Players:</h2>
-                <div class="field is-grouped is-grouped-multiline">
+                <div class="field is-grouped is-grouped-multiline PlayerList">
                   {game.players.map((p) => (
                     <div class="control">
                       <div class="tags has-addons">
@@ -63,11 +63,16 @@ const Lobby = ({ game, user, socket, name, onLeave }) => {
                             </span>
                           </span>
                         )}
-                        <span className="tag is-medium">
-                          <span class="icon is-small" onClick={onLeave}>
-                            <i class="fas fa-ban"></i>
+                        {(p.id == user || user == game.lead) && (
+                          <span className="tag is-medium">
+                            <span
+                              class="icon is-small"
+                              onClick={() => onLeave(p.id, p.name)}
+                            >
+                              <i class="fas fa-ban"></i>
+                            </span>
                           </span>
-                        </span>
+                        )}
                       </div>
                     </div>
                   ))}

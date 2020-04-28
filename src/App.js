@@ -1,16 +1,18 @@
 import React, { useEffect, useState } from "react";
-import { Provider } from "react-redux";
-
 import openSocket from "socket.io-client";
-import "bulma";
 
+import config from "./config";
+import { C, E } from "./server/constants";
 import Welcome from "./panels/Welcome";
 import Lobby from "./panels/Lobby";
 import Table from "./panels/Table";
 import Summary from "./panels/Summary";
-import UsernameModal from "./components/UsernameModal";
 
-const socket = openSocket(`localhost:3030`);
+import "bulma";
+
+const socket = openSocket(
+  `${config.sockets.protocol}://${config.sockets.host}:${config.sockets.port}`
+);
 
 function App() {
   const [gameId, setGameId] = useState(false);
@@ -19,48 +21,51 @@ function App() {
   const [name, setName] = useState();
   const [error, setError] = useState(false);
   const [userMessage, setUserMessage] = useState(false);
+  const [connected, setConnected] = useState(false);
 
   useEffect(() => {
     socket.on("error", (e) => {
       setError(e);
       setUser();
+      setConnected(false);
     });
     socket.on("disconnect", (e) => {
       setError(e);
       setUser();
+      setConnected(false);
     });
     socket.on("connect", (e) => {
       setError(false);
       setGame(false);
-
+      setConnected(true);
       const playerId = localStorage.getItem("playerId");
       setUser(playerId);
     });
 
-    socket.on("GAME_ID", (id) => {
+    socket.on(C.GAME_ID, (id) => {
       localStorage.setItem("gameId", id);
       setGameId(id);
     });
 
-    socket.on("PLAYER_ID", (obj) => {
+    socket.on(C.PLAYER_ID, (obj) => {
       localStorage.setItem("playerId", obj.playerId);
       setUser(obj.playerId);
     });
 
-    socket.on("USER_MESSAGE", (obj) => {
-      if (obj.code === "E_NO_GAME") {
+    socket.on(C.USER_MESSAGE, (obj) => {
+      if (obj.code === E.NO_GAME) {
         localStorage.removeItem("gameId");
         setGameId(false);
       }
       setUserMessage(obj.message);
     });
 
-    socket.on("GAME_STATE", (state) => {
+    socket.on(C.GAME_STATE, (state) => {
       setUserMessage(false);
       state && setGame(state);
     });
 
-    socket.on("NAME", (incomingName) => {
+    socket.on(C.NAME, (incomingName) => {
       if (incomingName) {
         localStorage.setItem("name", incomingName);
         setName(incomingName);
@@ -79,24 +84,29 @@ function App() {
 
   useEffect(() => {
     if (user) {
-      socket.emit("REGISTER_USER", user);
+      socket.emit(C.REGISTER_USER, user);
     }
   }, [user]);
 
   useEffect(() => {
     if (gameId) {
-      console.log("AAAAA", name);
-      socket.emit("JOIN_GAME", gameId, name);
+      socket.emit(C.JOIN_GAME, gameId, name);
     }
   }, [gameId]);
 
-  const exitGame = () => {
-    if (!game) {
-      socket.emit("EXIT_GAME", game.id);
+  const exitGame = (playerId, playerName) => {
+    const sure = window.confirm(
+      `You're about to make user '${playerName}' leave the game - are you sure?`
+    );
+    if (game && sure) {
+      socket.emit(C.EXIT_GAME, playerId);
+
+      if (playerName === name) {
+        localStorage.removeItem("gameId");
+        setGame(false);
+        setGameId(false);
+      }
     }
-    localStorage.removeItem("gameId");
-    setGame(false);
-    setGameId(false);
   };
 
   return (
@@ -173,6 +183,7 @@ function App() {
                 user={user}
                 socket={socket}
                 onGameId={(id) => setGameId(id)}
+                connected={connected}
               />
             )}
             {game && game.players && !game.started && (

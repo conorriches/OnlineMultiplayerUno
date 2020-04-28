@@ -16,15 +16,15 @@ const colours = ["RED", "GREEN", "BLUE", "YELLOW"];
 const actions = [DC, CC];
 const tempNames = [
   "Sirius",
-  "Rigel",
   "Vega",
+  "Altair",
+  "Arcturus",
+  "Alcor",
   "Pollux",
   "Acrux",
-  "Deneb",
-  "Alcor",
-  "Altair",
   "Canopus",
-  "Arcturus",
+  "Deneb",
+  "Rigel",
 ];
 
 class Game {
@@ -239,10 +239,15 @@ class Game {
     return false;
   }
 
-  removePlayer({ id }) {
+  removePlayer(id) {
     this.addMessage(id, `has left the game`);
 
-    this.players = this.players.filter((p) => p.id === id);
+    console.log(this.players);
+    this.players = this.players.filter((p) => {
+      console.log(p.id, id, p.id === id);
+      return p.id !== id;
+    });
+    console.log(this.players);
   }
 
   drawCard(me, force = false) {

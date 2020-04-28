@@ -12,6 +12,18 @@ code {
     monospace;
 }
 
+.navbar,
+.PlayerList .tag {
+  animation: fadein 0.5s;
+  animation-delay: 0s;
+  animation-fill-mode: backwards;
+}
+.welcome,
+.lobby {
+  animation: fadein 0.5s;
+  animation-delay: 0.1s;
+  animation-fill-mode: backwards;
+}
 .table.animate .players {
   opacity: 0;
   animation: fadein 2s;
