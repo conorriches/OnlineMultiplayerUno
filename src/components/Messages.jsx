@@ -22,44 +22,44 @@ const Messages = ({ game, user, onUno, onChallenge, onCallout }) => {
 
   return (
     <div className="box">
-      <h2 class="subtitle">Game Actions:</h2>
-      <div class="level">
+      <h2 className="subtitle">Game Actions:</h2>
+      <div className="level">
         <div className="level-item has-text-centered draw">
           <button
-            class="button is-primary is-light is-fullwidth"
+            className="button is-primary is-light is-fullwidth"
             onClick={onUno}
             {...disableUno}
           >
-            <span class="icon is-small">
-              <i class="fas fa-check"></i>
+            <span className="icon is-small">
+              <i className="fas fa-check"></i>
             </span>
             <span>Uno!</span>
           </button>
           <button
-            class="button is-danger is-light is-fullwidth"
+            className="button is-danger is-light is-fullwidth"
             onClick={onChallenge}
             {...disableChallenge}
           >
-            <span class="icon is-small">
-              <i class="fas fa-thumbs-down"></i>
+            <span className="icon is-small">
+              <i className="fas fa-thumbs-down"></i>
             </span>
             <span>Challenge</span>
           </button>
 
           <button
-            class="button is-warning is-light is-fullwidth"
+            className="button is-warning is-light is-fullwidth"
             onClick={onCallout}
             {...disableCallout}
           >
-            <span class="icon is-small">
-              <i class="fas fa-gavel"></i>
+            <span className="icon is-small">
+              <i className="fas fa-gavel"></i>
             </span>
             <span>Undeclared Uno</span>
           </button>
         </div>
       </div>
-      <h2 class="subtitle">Events:</h2>
-      <div class="level">
+      <h2 className="subtitle">Events:</h2>
+      <div className="level">
         <div className="messages">
           {game.messages.reverse().map((m) => {
             return (

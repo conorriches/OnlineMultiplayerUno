@@ -7,7 +7,7 @@ const io = require("socket.io")(server);
 app.use(express.static(path.join(__dirname, "../", "../", "build")));
 
 app.get("/", function (req, res) {
-  if (process.env.NODE_ENV === "production") {
+  if (true || process.env.NODE_ENV === "production") {
     res.sendFile(path.join(__dirname, "../", "../", "build", "index.html"));
   } else {
     res.send(

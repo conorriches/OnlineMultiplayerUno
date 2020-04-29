@@ -2,6 +2,7 @@
   "name": "uno",
   "version": "0.1.0",
   "private": true,
+  "proxy": "http://localhost:5000",
   "dependencies": {
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.5.0",
@@ -24,6 +25,7 @@
     "start": "pm2-runtime start ecosystem.config.js --env production",
     "start:dev": "pm2 start ecosystem.config.js --env development",
     "build": "react-scripts build",
+    "server": "nodemon src/server",
     "client:start": "react-scripts start",
     "client:test": "jest --watch",
     "client:eject": "react-scripts eject"

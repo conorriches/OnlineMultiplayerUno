@@ -11,7 +11,7 @@ import Summary from "./panels/Summary";
 import "bulma";
 
 const socket = io(`${config.sockets.protocol}://${config.sockets.host}`);
-
+console.log(`${config.sockets.protocol}://${config.sockets.host}`);
 function App() {
   const [gameId, setGameId] = useState(false);
   const [game, setGame] = useState(false);
@@ -90,7 +90,7 @@ function App() {
     if (gameId) {
       socket.emit(C.JOIN_GAME, gameId, name);
     }
-  }, [gameId]);
+  }, [gameId, name]);
 
   const exitGame = (playerId, playerName) => {
     const sure = window.confirm(
@@ -166,7 +166,7 @@ function App() {
         {userMessage && (
           <div className="notification is-danger">
             <button
-              class="delete"
+              className="delete"
               onClick={() => setUserMessage(false)}
             ></button>
             {userMessage}

@@ -7,14 +7,14 @@ const Summary = ({ game, onClose }) => {
   const maxCards = order[order.length - 1].deck.length;
 
   return (
-    <div class="modal is-active">
-      <div class="modal-background"></div>
-      <div class="modal-content">
-        <section class="hero is-primary">
-          <div class="hero-body">
-            <div class="container">
-              <h1 class="title">Winner: {order[0].name}</h1>
-              <h2 class="subtitle">Congratulations!</h2>
+    <div className="modal is-active">
+      <div className="modal-background"></div>
+      <div className="modal-content">
+        <section className="hero is-primary">
+          <div className="hero-body">
+            <div className="container">
+              <h1 className="title">Winner: {order[0].name}</h1>
+              <h2 className="subtitle">Congratulations!</h2>
 
               <div className="box">
                 <h2 className="subtitle">Summary:</h2>
@@ -24,22 +24,22 @@ const Summary = ({ game, onClose }) => {
                       <div className="level-item level-left">{p.name}</div>
                       <div className="level-item">
                         <progress
-                          class="progress is-medium is-danger"
+                          className="progress is-medium is-danger"
                           value={p.deck.length}
                           max={maxCards}
                         ></progress>
                       </div>
                       <div className="level-item level-right">
-                        <div class="tags are-medium has-addons">
-                          <span class="tag is-black">
-                            <span class="icon is-small">
-                              <i class="fas fa-hashtag"></i>
+                        <div className="tags are-medium has-addons">
+                          <span className="tag is-black">
+                            <span className="icon is-small">
+                              <i className="fas fa-hashtag"></i>
                             </span>
                             <span>{p.deck.length}</span>
                           </span>
-                          <span class="tag is-warning">
-                            <span class="icon is-small">
-                              <i class="fas fa-star"></i>
+                          <span className="tag is-warning">
+                            <span className="icon is-small">
+                              <i className="fas fa-star"></i>
                             </span>
                             <span>{p.deck.length}</span>
                           </span>
@@ -54,7 +54,7 @@ const Summary = ({ game, onClose }) => {
         </section>
       </div>
       <button
-        class="modal-close is-large"
+        className="modal-close is-large"
         aria-label="close"
         onClick={onClose}
       ></button>

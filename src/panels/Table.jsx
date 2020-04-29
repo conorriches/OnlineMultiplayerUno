@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Card from "../components/Card";
-import Colour from "../components/Colour";
 import Players from "../components/Players";
 import Decks from "../components/Decks";
 import Actions from "../components/Actions";
@@ -49,8 +48,8 @@ const Table = ({ game, user, socket }) => {
             <Players game={game} user={user} />
           </div>
         </div>
-        <div class="columns">
-          <div class="column is-two-thirds">
+        <div className="columns">
+          <div className="column is-two-thirds">
             <Decks game={game} drawCard={drawCard} />
             <div className="actions box">
               {game.player.id === user && (
@@ -65,20 +64,18 @@ const Table = ({ game, user, socket }) => {
               )}
 
               <div className="deck">
-                <div class="columns">
-                  <div class="column">
+                <div className="columns">
+                  <div className="column">
                     {myCards
                       .concat()
                       .sort((a, b) => {
-                        if (!sort) {
-                          return 0;
-                        }
                         if (sort === "COLOUR") {
                           return a.colour > b.colour;
                         }
                         if (sort === "SYMBOL") {
                           return a.symbol > b.symbol;
                         }
+                        return 0;
                       })
                       .map((c) => {
                         return (
@@ -94,9 +91,9 @@ const Table = ({ game, user, socket }) => {
                   </div>
                 </div>
               </div>
-              <div class="control" style={{ display: "none" }}>
+              <div className="control" style={{ display: "none" }}>
                 Sort:
-                <label class="radio">
+                <label className="radio">
                   <input
                     type="radio"
                     name="foobar"
@@ -105,7 +102,7 @@ const Table = ({ game, user, socket }) => {
                   />
                   Symbol
                 </label>
-                <label class="radio">
+                <label className="radio">
                   <input
                     type="radio"
                     name="foobar"
@@ -114,7 +111,7 @@ const Table = ({ game, user, socket }) => {
                   />
                   Colour
                 </label>
-                <label class="radio">
+                <label className="radio">
                   <input
                     type="radio"
                     name="foobar"
@@ -126,7 +123,7 @@ const Table = ({ game, user, socket }) => {
               </div>
             </div>
           </div>
-          <div class="events column">
+          <div className="events column">
             <Messages
               game={game}
               user={user}

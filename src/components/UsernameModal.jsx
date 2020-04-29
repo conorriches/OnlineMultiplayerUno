@@ -4,21 +4,25 @@ const UsernameModal = ({ defaultValue, show, onContinue, onClose }) => {
   const [value, setValue] = useState(defaultValue || "");
 
   return (
-    <div class={`modal ${show && "is-active"}`}>
-      <div class="modal-background"></div>
-      <div class="modal-card">
-        <header class="modal-card-head">
-          <p class="modal-card-title">Choose a player name</p>
-          <button class="delete" aria-label="close" onClick={onClose}></button>
+    <div className={`modal ${show && "is-active"}`}>
+      <div className="modal-background"></div>
+      <div className="modal-card">
+        <header className="modal-card-head">
+          <p className="modal-card-title">Choose a player name</p>
+          <button
+            className="delete"
+            aria-label="close"
+            onClick={onClose}
+          ></button>
         </header>
-        <section class="modal-card-body">
+        <section className="modal-card-body">
           <div className="level">
             <p>The player name must be unique to other players in the game.</p>
           </div>
-          <div class="field">
-            <div class="control">
+          <div className="field">
+            <div className="control">
               <input
-                class={`input is-medium ${!value.length && "is-danger"}`}
+                className={`input is-medium ${!value.length && "is-danger"}`}
                 type="text"
                 value={value}
                 onChange={(e) => {
@@ -28,9 +32,9 @@ const UsernameModal = ({ defaultValue, show, onContinue, onClose }) => {
             </div>
           </div>
         </section>
-        <footer class="modal-card-foot">
+        <footer className="modal-card-foot">
           <button
-            class="button is-success"
+            className="button is-success"
             {...{ disabled: !value }}
             onClick={() => onContinue(value)}
           >

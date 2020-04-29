@@ -11,7 +11,7 @@ const Actions = ({ game, chooseColour, drawCard }) => {
             {game.criteria.indexOf("CHOOSECOLOUR") > -1 && (
               <>
                 <h2 className="subtitle">Please set a colour:</h2>
-                <div class="tags are-medium">
+                <div className="tags are-medium">
                   <Colour colour="RED" onClick={chooseColour} />
                   <Colour colour="GREEN" onClick={chooseColour} />
                   <Colour colour="YELLOW" onClick={chooseColour} />
@@ -24,7 +24,7 @@ const Actions = ({ game, chooseColour, drawCard }) => {
                 <>
                   <h2 className="subtitle">
                     To move on you must draw{" "}
-                    <span class="tag is-large is-dark">
+                    <span className="tag is-large is-dark">
                       {game.criteria.filter((c) => c === "DRAWCARD").length}
                     </span>{" "}
                     cards

@@ -4,7 +4,7 @@ import "../css/card.css";
 const Players = ({ game, user }) => {
   return (
     <div className="box players">
-      <div class="level">
+      <div className="level">
         {game.players
           .sort((a, b) => {
             return !game.direction;
@@ -90,11 +90,11 @@ const Players = ({ game, user }) => {
             </>
           ))}
 
-        <div class="level-item level-right">
-          <a className="pagination-previous is-current">Help</a>
+        <div className="level-item level-right">
+          <div className="pagination-previous is-current">Help</div>
         </div>
-        <div class="level-item level-right">
-          <a className="pagination-next">Rules</a>
+        <div className="level-item level-right">
+          <div className="pagination-next">Rules</div>
         </div>
       </div>
     </div>

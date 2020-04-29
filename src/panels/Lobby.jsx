@@ -39,14 +39,14 @@ const Lobby = ({ game, user, socket, name, onLeave }) => {
             <div className="columns">
               <div className="column is-two-thirds">
                 <h2 className="subtitle">Current Players:</h2>
-                <div class="field is-grouped is-grouped-multiline PlayerList">
+                <div className="field is-grouped is-grouped-multiline PlayerList">
                   {game.players.map((p) => (
-                    <div class="control">
-                      <div class="tags has-addons">
+                    <div key={p.id} className="control">
+                      <div className="tags has-addons">
                         <span
                           className={`tag is-medium is-dark
-                            ${p.id == user && "is-warning"}
-                            ${p.id == game.lead && "is-danger"}
+                            ${p.id === user && "is-warning"}
+                            ${p.id === game.lead && "is-danger"}
                           `}
                         >
                           <span>
@@ -55,21 +55,24 @@ const Lobby = ({ game, user, socket, name, onLeave }) => {
                             {p.id === game.lead && " (lead)"}
                           </span>
                         </span>
-                        {console.log("!!", p.id, user)}
-                        {p.id == user && (
+
+                        {p.id === user && (
                           <span className="tag is-medium">
-                            <span class="icon is-small" onClick={onEditName}>
-                              <i class="fas fa-pencil-alt"></i>
+                            <span
+                              className="icon is-small"
+                              onClick={onEditName}
+                            >
+                              <i className="fas fa-pencil-alt"></i>
                             </span>
                           </span>
                         )}
-                        {(p.id == user || user == game.lead) && (
+                        {(p.id === user || user === game.lead) && (
                           <span className="tag is-medium">
                             <span
-                              class="icon is-small"
+                              className="icon is-small"
                               onClick={() => onLeave(p.id, p.name)}
                             >
-                              <i class="fas fa-ban"></i>
+                              <i className="fas fa-ban"></i>
                             </span>
                           </span>
                         )}
@@ -82,7 +85,7 @@ const Lobby = ({ game, user, socket, name, onLeave }) => {
                 {user === game.lead && (
                   <>
                     <div className="box">
-                      <h2 class="subtitle">
+                      <h2 className="subtitle">
                         Once you have three or more players:
                       </h2>
                       <button
