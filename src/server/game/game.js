@@ -165,7 +165,6 @@ class Game {
         const card = this.deck.pop();
         this.players[i].deck.push(card);
       }
-      this.players[i].deck.push({ symbol: 0, colour: "RED" });
     }
     this.addMessage(false, "dealt 7 cards to each player");
   }

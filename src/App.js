@@ -93,13 +93,16 @@ function App() {
   }, [gameId, name]);
 
   const exitGame = (playerId, playerName) => {
-    const sure = window.confirm(
-      `You're about to make user '${playerName}' leave the game - are you sure?`
-    );
+    let copy = `You're about to kick user '${playerName}' from the game - are you sure?`;
+    if (game && sure) {
+      copy = "You're about the leave the game - are you sure?";
+    }
+
+    const sure = window.confirm(copy);
     if (game && sure) {
       socket.emit(C.EXIT_GAME, playerId);
 
-      if (playerName === name) {
+      if (playerId === user) {
         localStorage.removeItem("gameId");
         setGame(false);
         setGameId(false);
