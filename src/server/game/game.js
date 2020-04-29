@@ -284,6 +284,7 @@ class Game {
           c.colour = NC;
         }
       }
+      return c;
     });
     this.shuffleDeck();
   }
