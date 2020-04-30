@@ -24,7 +24,7 @@ const Welcome = ({ connected, socket, onGameId }) => {
       <div className="hero-body">
         <div className="container">
           <h1 className="title">Online Multiplayer Uno</h1>
-          <h2 className="subtitle">With house Rules</h2>
+          <h2 className="subtitle">with House Rules!</h2>
 
           {!connected && (
             <div className="notification is-dark">

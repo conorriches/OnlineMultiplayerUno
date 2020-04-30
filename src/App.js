@@ -20,6 +20,7 @@ function App() {
   const [error, setError] = useState(false);
   const [userMessage, setUserMessage] = useState(false);
   const [connected, setConnected] = useState(false);
+  const [showSummary, setShowSummary] = useState(true);
 
   useEffect(() => {
     socket.on("error", (e) => {
@@ -92,13 +93,8 @@ function App() {
     }
   }, [gameId, name]);
 
-  const exitGame = (playerId, playerName) => {
-    let copy = `You're about to kick user '${playerName}' from the game - are you sure?`;
-    if (game && sure) {
-      copy = "You're about the leave the game - are you sure?";
-    }
-
-    const sure = window.confirm(copy);
+  const exitGame = (playerId) => {
+    const sure = window.confirm("Are you sure?");
     if (game && sure) {
       socket.emit(C.EXIT_GAME, playerId);
 
@@ -141,22 +137,28 @@ function App() {
                       </strong>
                     </div>
                   )}
-                  <div className="button is-light">
+                  <a
+                    className="button is-light"
+                    target="_blank"
+                    href="https://github.com/conorriches/OnlineMultiplayerUno"
+                  >
                     <strong>
                       <span className="icon has-text-dark">
                         <i className="fab fa-github"></i>
                       </span>
                     </strong>
-                  </div>
+                  </a>
                 </div>
               </div>
             </div>
           </div>
         </nav>
 
-        {game.started && game.players.some((p) => p.deck.length === 0) && (
-          <Summary game={game} onClose={exitGame} />
-        )}
+        {game.started &&
+          game.players.some((p) => p.deck.length === 0) &&
+          showSummary && (
+            <Summary game={game} onClose={() => setShowSummary(false)} />
+          )}
 
         {error && (
           <div className="notification is-danger">
@@ -197,7 +199,12 @@ function App() {
               />
             )}
             {game && game.players && game.started && (
-              <Table game={game} user={user} socket={socket} />
+              <Table
+                game={game}
+                user={user}
+                socket={socket}
+                onLeave={exitGame}
+              />
             )}
           </>
         )}

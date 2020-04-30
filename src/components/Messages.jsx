@@ -66,12 +66,12 @@ const Messages = ({ game, user, onUno, onChallenge, onCallout }) => {
               <li>
                 <span
                   className={`tag ${
-                    m.user ? "is-primary" : "is-danger"
+                    m.user ? "is-primary" : "is-warning"
                   }  is-light`}
                 >
                   {m.user || (
                     <span className="icon">
-                      <i className="fas fa-user-lock"></i>
+                      <i className="fas fa-user-shield"></i>
                     </span>
                   )}
                 </span>

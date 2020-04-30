@@ -8,12 +8,13 @@ const P2 = "PICKUP2",
   SC = "SETCOLOUR",
   DC = "DRAWCARD",
   CC = "CHOOSECOLOUR",
-  NC = "NOCOLOUR";
+  NC = "NOCOLOUR",
+  SW = "SWAPWITH";
 const numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 const symbols = [P2, SK, SD];
 const wild = [P4, SC];
 const colours = ["RED", "GREEN", "BLUE", "YELLOW"];
-const actions = [DC, CC];
+const actions = [DC, CC, SW];
 const tempNames = [
   "Sirius",
   "Vega",
@@ -238,18 +239,29 @@ class Game {
     return false;
   }
 
-  removePlayer(id) {
-    this.addMessage(id, `has left the game`);
+  removePlayer(id, name) {
+    this.addMessage(name, `has left the game, cards going into deck`);
 
-    console.log(this.players);
+    let cards;
+    this.players.map((p) => {
+      if (p.id === id) {
+        cards = p.deck;
+      }
+    });
+
+    if (cards) {
+      this.deck = this.deck.concat(cards);
+      this.shuffleDeck();
+    }
+
     this.players = this.players.filter((p) => {
-      console.log(p.id, id, p.id === id);
       return p.id !== id;
     });
-    console.log(this.players);
   }
 
   drawCard(me, force = false) {
+    if (this.players.some((p) => p.deck.length === 0)) return false;
+
     let res = false;
     this.players.map((p) => {
       if (p.id === me || force) {
@@ -367,6 +379,9 @@ class Game {
 
   playCard(card, user) {
     const topCard = this.discard[this.discard.length - 1];
+    const usersName = this.getPlayerByToken(user).name;
+
+    if (this.players.some((p) => p.deck.length === 0)) return false;
 
     //TODO user === this.player
     if (this.matches(user === this.player, topCard, card)) {
@@ -386,7 +401,7 @@ class Game {
         this.discard.push(card);
 
         this.addMessage(
-          this.getPlayerByToken(user).name,
+          usersName,
           `played a ${card.colour !== "NOCOLOUR" ? card.colour : ""} ${
             card.symbol
           }`
@@ -406,6 +421,37 @@ class Game {
           decks.forEach((d, i) => {
             this.players[i].deck = d;
           });
+        }
+
+        if (card.symbol === 7) {
+          const choice = true || this.players.length % 2 !== 0;
+
+          if (choice) {
+            this.addMessage(
+              false,
+              `Swap hands! ${usersName} must choose who to swap with`
+            );
+            this.criteria.push(SW);
+          } else {
+            let myIndex;
+            this.players.forEach((p, i) => {
+              if (p.id === user) {
+                myIndex = i;
+              }
+            });
+            const oppositeIndex = this.players.length - 1 - myIndex;
+            let oppositePlayer = this.players[oppositeIndex];
+            this.addMessage(
+              false,
+              `Swap hands! ${usersName} swaps with ${oppositePlayer.name}, who is opposite`
+            );
+
+            const playerOneCards = [].concat(this.players[myIndex].deck);
+            const playerTwoCards = [].concat(this.players[oppositeIndex].deck);
+
+            this.players[myIndex].deck = playerTwoCards;
+            this.players[oppositeIndex].deck = playerOneCards;
+          }
         }
 
         // Add criteria to stack
@@ -464,7 +510,10 @@ class Game {
   shouldIncrementPlayer() {
     const card = this.discard[this.discard.length - 1];
 
-    if (!((card.symbol === P4 || card.symbol === SC) && card.colour == NC)) {
+    const unchosenColour =
+      (card.symbol === P4 || card.symbol === SC) && card.colour == NC;
+
+    if (!unchosenColour && this.criteria.indexOf(SW) === -1) {
       this.player = this.nextPlayer();
     }
   }
@@ -515,6 +564,31 @@ class Game {
     return false;
   }
 
+  swapDecks(id1, id2) {
+    let p1Index = -1,
+      p2Index = -1;
+
+    if (this.criteria.indexOf(SW) === -1) {
+      return false;
+    }
+
+    this.players.forEach((p, i) => {
+      if (p.id === id1) p1Index = i;
+      if (p.id === id2) p2Index = i;
+    });
+
+    if (p1Index > -1 && p2Index > -1) {
+      const playerOneCards = [].concat(this.players[p1Index].deck);
+      const playerTwoCards = [].concat(this.players[p2Index].deck);
+
+      this.players[p1Index].deck = playerTwoCards;
+      this.players[p2Index].deck = playerOneCards;
+      return true;
+    }
+
+    return false;
+  }
+
   getPlayerByToken(token) {
     let player;
     this.players.some((p) => {
@@ -527,6 +601,8 @@ class Game {
   }
 
   declareUno(me) {
+    if (this.players.some((p) => p.deck.length === 0)) return false;
+
     let changed = false;
     this.players = this.players.map((p) => {
       if (p.id === me.token && p.deck.length === 1) {
@@ -539,6 +615,8 @@ class Game {
   }
 
   challenge(me) {
+    if (this.players.some((p) => p.deck.length === 0)) return false;
+
     const previousPlayer = this.previousPlayer();
 
     this.players = this.players.map((p) => {
@@ -579,6 +657,8 @@ class Game {
   }
 
   callout() {
+    if (this.players.some((p) => p.deck.length === 0)) return false;
+
     this.players = this.players.map((p) => {
       if (p.deck.length === 1 && p.uno === false) {
         for (let i = 0; i < 4; i++) {

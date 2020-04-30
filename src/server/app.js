@@ -206,6 +206,31 @@ io.on("connection", (socket) => {
     }
   });
 
+  socket.on(C.CHOOSE_PLAYER, (player) => {
+    const game = myGame(users, games, socket.id);
+    const me = getUserBySocket(users, socket.id);
+    if (!game || !me) {
+      socket.emit(C.USER_MESSAGE, {
+        code: E.COLOUR,
+        message: `There's been an unexpected error! Please refresh. [CHOOSE_PLAYER]`,
+      });
+    }
+
+    const myName = game.players.filter((p) => p.id === me.token)[0].name;
+    const swappingWith = game.players.filter((p) => p.id === player)[0];
+
+    if (game.player !== me.token) {
+      return false;
+    }
+
+    if (game.swapDecks(me.token, player)) {
+      game.criteria = [];
+      game.addMessage(myName, `swaps cards with ${swappingWith.name}`);
+      game.shouldIncrementPlayer();
+      updatePlayers(users, games, game);
+    }
+  });
+
   socket.on(C.PLAY_CARD, (card) => {
     const game = myGame(users, games, socket.id);
     const me = getUserBySocket(users, socket.id);
@@ -274,8 +299,10 @@ io.on("connection", (socket) => {
     if (game && me) {
       const isLead = game.lead === me.token;
       const isMe = playerId === me.token;
+      const name = game.players.forEach((p) => p.id === playerId);
+
       if (isLead || isMe) {
-        game.removePlayer(playerId);
+        game.removePlayer(playerId, name ? name[0].name : false);
         updatePlayers(users, games, game);
       }
     }

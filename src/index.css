@@ -24,6 +24,11 @@ code {
   animation-delay: 0.1s;
   animation-fill-mode: backwards;
 }
+
+.players {
+  z-index: 500;
+}
+
 .table.animate .players {
   opacity: 0;
   animation: fadein 2s;
@@ -83,7 +88,7 @@ code {
   margin: 0 0.5rem !important;
 }
 
-.select-colour.clickable {
+.clickable {
   cursor: pointer;
 }
 .select-colour.RED {
@@ -114,6 +119,15 @@ code {
 .messages li {
   list-style-type: none;
   text-align: left;
+  padding: 0.3em;
+}
+
+.messages li:nth-child(2n) {
+  background-color: #fafafa;
+}
+
+.messages .tag {
+  margin-right: 0.5em;
 }
 
 .messages .fade {
@@ -134,4 +148,18 @@ code {
 .box .subtitle,
 .box .title {
   color: black !important;
+}
+
+.fixed {
+  position: fixed;
+}
+
+.rules ul {
+  margin: 1em;
+}
+
+.rules ul li {
+  list-style-type: disc;
+  margin-left: 1em;
+  padding-left: 1em;
 }
