@@ -17,7 +17,7 @@ const Lobby = ({ game, user, socket, name, onLeave }) => {
     setShowModal(true);
   };
 
-  const disableStart = { disabled: game.players.length < 2 };
+  const disableStart = { disabled: game.players.length < 3 };
 
   return (
     <>

@@ -6,8 +6,4 @@ module.exports = {
     protocol: "http",
     host: "localhost",
   },
-  players: {
-    minimum: 3,
-    maximum: 10,
-  },
 };

@@ -4,7 +4,7 @@
 
 ### A fun project, written by Conor Riches
 
-![](./docs/screenshot.png)
+![](./docs/screenshot.PNG)
 
 ## Running
 
