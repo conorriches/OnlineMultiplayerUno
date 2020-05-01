@@ -7,6 +7,8 @@ import Welcome from "./panels/Welcome";
 import Lobby from "./panels/Lobby";
 import Table from "./panels/Table";
 import Summary from "./panels/Summary";
+import useAudio from "./useAudio";
+import pop from "./pop.mp3";
 
 import "bulma";
 
@@ -21,6 +23,9 @@ function App() {
   const [userMessage, setUserMessage] = useState(false);
   const [connected, setConnected] = useState(false);
   const [showSummary, setShowSummary] = useState(true);
+  const [playing, toggle] = useAudio(pop);
+  const [topCard, setTopCard] = useState({ symbol: false, colour: false });
+  const [mute, setMute] = useState(false);
 
   useEffect(() => {
     socket.on("error", (e) => {
@@ -93,8 +98,23 @@ function App() {
     }
   }, [gameId, name]);
 
+  useEffect(() => {
+    if (topCard && game.topCard) {
+      const diffCard =
+        topCard.symbol !== game.topCard.symbol ||
+        topCard.colour !== game.topCard.colour;
+      if (diffCard && !mute) {
+        setTopCard(game.topCard);
+      }
+    }
+  }, [game]);
+
   const exitGame = (playerId) => {
-    const sure = window.confirm("Are you sure?");
+    let copy = "You're about to kick this user from the game. Continue?";
+    if (playerId === user) {
+      copy = "You're about to leave the game - are you sure?";
+    }
+    const sure = window.confirm(copy);
     if (game && sure) {
       socket.emit(C.EXIT_GAME, playerId);
 
@@ -204,6 +224,8 @@ function App() {
                 user={user}
                 socket={socket}
                 onLeave={exitGame}
+                mute={mute}
+                onMute={setMute}
               />
             )}
           </>

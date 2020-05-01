@@ -41,6 +41,7 @@ class Game {
     this.actions = [];
     this.messages = [];
     this.challenged = false;
+    this.drawCount = 0;
   }
 
   status(token) {
@@ -249,6 +250,10 @@ class Game {
       }
     });
 
+    if (game.player === p.id) {
+      this.player = this.nextPlayer();
+    }
+
     if (cards) {
       this.deck = this.deck.concat(cards);
       this.shuffleDeck();
@@ -268,6 +273,18 @@ class Game {
         if (this.deck.length > 0) {
           p.deck.push(this.deck.pop());
           p.uno = false;
+          this.drawCount = this.drawCount + 1;
+
+          if (this.messages[this.messages.length - 1].user === p.name) {
+            this.messages[this.messages.length - 1] = {
+              user: p.name,
+              message: `drew ${this.drawCount} cards`,
+            };
+          } else {
+            this.addMessage(p.name, `drew a card`);
+            this.drawCount = 1;
+          }
+
           const criteriaToDraw = this.criteria.indexOf(DC);
 
           if (criteriaToDraw > -1) {
@@ -281,7 +298,7 @@ class Game {
       }
     });
 
-    if (this.deck.length === 1) {
+    if (this.deck.length < 1) {
       this.shuffleDiscardIntoDraw();
     }
     return res;
@@ -424,7 +441,7 @@ class Game {
         }
 
         if (card.symbol === 7) {
-          const choice = true || this.players.length % 2 !== 0;
+          const choice = this.players.length % 2 !== 0;
 
           if (choice) {
             this.addMessage(
@@ -453,6 +470,9 @@ class Game {
             this.players[oppositeIndex].deck = playerOneCards;
           }
         }
+        if (card.symbol == SD) {
+          this.direction = !this.direction;
+        }
 
         // Add criteria to stack
         if (card.symbol === P4) {
@@ -463,9 +483,6 @@ class Game {
         }
         if (card.symbol === SC || card.symbol === P4) {
           this.criteria.push(CC);
-        }
-        if (card.symbol == SD) {
-          this.direction = !this.direction;
         }
         if (card.symbol == SK) {
           this.addMessage(

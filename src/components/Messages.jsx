@@ -61,24 +61,27 @@ const Messages = ({ game, user, onUno, onChallenge, onCallout }) => {
       <h2 className="subtitle">Events:</h2>
       <div className="level">
         <div className="messages">
-          {game.messages.reverse().map((m) => {
-            return (
-              <li>
-                <span
-                  className={`tag ${
-                    m.user ? "is-primary" : "is-warning"
-                  }  is-light`}
-                >
-                  {m.user || (
-                    <span className="icon">
-                      <i className="fas fa-user-shield"></i>
-                    </span>
-                  )}
-                </span>
-                {m.message}
-              </li>
-            );
-          })}
+          {game.messages
+            .slice(0)
+            .reverse()
+            .map((m) => {
+              return (
+                <li>
+                  <span
+                    className={`tag ${
+                      m.user ? "is-primary" : "is-warning"
+                    }  is-light`}
+                  >
+                    {m.user || (
+                      <span className="icon">
+                        <i className="fas fa-user-shield"></i>
+                      </span>
+                    )}
+                  </span>
+                  {m.message}
+                </li>
+              );
+            })}
           {game.messages.length >= 10 && <div className="fade"></div>}
         </div>
       </div>

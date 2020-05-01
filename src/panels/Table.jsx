@@ -5,7 +5,7 @@ import Decks from "../components/Decks";
 import Actions from "../components/Actions";
 import Messages from "../components/Messages";
 
-const Table = ({ game, user, socket, onLeave }) => {
+const Table = ({ game, user, socket, onLeave, mute, onMute }) => {
   const [sort, setSort] = useState(false);
 
   const player = game.players.filter((p) => p.id === user);
@@ -53,7 +53,13 @@ const Table = ({ game, user, socket, onLeave }) => {
       <div className="hero-body">
         <div className="columns">
           <div className="players column">
-            <Players game={game} user={user} onLeave={onLeave} />
+            <Players
+              game={game}
+              user={user}
+              onLeave={onLeave}
+              mute={mute}
+              onMute={onMute}
+            />
           </div>
         </div>
         <div className="columns">

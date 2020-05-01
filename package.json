@@ -23,7 +23,7 @@
   },
   "scripts": {
     "start": "pm2-runtime start ecosystem.config.js --env production",
-    "start:dev": "pm2 start ecosystem.config.js --env development",
+    "dev": "pm2 start ecosystem.config.js",
     "build": "react-scripts build",
     "server": "nodemon src/server",
     "client:start": "react-scripts start",

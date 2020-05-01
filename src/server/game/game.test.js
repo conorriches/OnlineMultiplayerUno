@@ -93,6 +93,8 @@ describe("match()", () => {
         expect(game.matches(true, card(SK, R), card(P2, R))).toBe(true);
         expect(game.matches(true, card(SK, R), card(SW, R))).toBe(true);
         expect(game.matches(true, card(SK, R), card(P2, G))).toBe(false);
+        expect(game.matches(true, card(P2, G), card(P2, G))).toBe(true);
+        expect(game.matches(true, card(P2, B), card(P2, Y))).toBe(true);
       });
       test("on a wildcard", () => {
         expect(game.matches(true, card(P4, R), card(SK, R))).toBe(true);
@@ -133,12 +135,14 @@ describe("match()", () => {
     describe("must be an exact match", () => {
       expect(game.matches(false, card(P4, R), card(P4, R))).toBe(true);
       expect(game.matches(false, card(SK, R), card(SK, R))).toBe(true);
+      expect(game.matches(false, card(P2, Y), card(P2, Y))).toBe(true);
       expect(game.matches(false, card(1, R), card(1, R))).toBe(true);
       expect(game.matches(false, card(1, R), card(2, R))).toBe(false);
       expect(game.matches(false, card(1, R), card(1, G))).toBe(false);
       expect(game.matches(false, card(P4, R), card(SC, R))).toBe(false);
       expect(game.matches(false, card(SC, R), card(P4, R))).toBe(false);
       expect(game.matches(false, card(SC, R), card(P4, G))).toBe(false);
+      expect(game.matches(false, card(P2, R), card(P2, G))).toBe(false);
     });
   });
 });

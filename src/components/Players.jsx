@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "../css/card.css";
 
-const Players = ({ game, user, onLeave }) => {
+const Players = ({ game, user, onLeave, mute, onMute }) => {
   const [showAbout, setShowAbout] = useState(false);
   const [showRules, setShowRules] = useState(false);
 
@@ -109,9 +109,8 @@ const Players = ({ game, user, onLeave }) => {
       {<RulesModal />}
       <div className="level">
         {game.players
-          .sort((a, b) => {
-            return !game.direction;
-          })
+          .slice()
+          .sort(() => game.direction)
           .map((p, i) => (
             <>
               <div className="level-item is-narrow player" key={p.id}>
@@ -202,11 +201,23 @@ const Players = ({ game, user, onLeave }) => {
               About
             </div>
             <div
+              className="button is-light is-success"
+              onClick={() => {
+                onMute(!mute);
+              }}
+            >
+              <span className="icon has-text-dark">
+                <i
+                  className={`fas ${mute ? "fa-volume-mute" : "fa-volume-up"}`}
+                ></i>
+              </span>
+            </div>
+            <div
               className="button is-light is-danger"
               onClick={() => onLeave(user)}
             >
               <span className="icon has-text-danger">
-                <i className="fas fa-window-close"></i>
+                <i className="fas fa-sign-out-alt"></i>
               </span>
             </div>
           </div>
