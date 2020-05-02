@@ -301,7 +301,7 @@ io.on("connection", (socket) => {
     if (!game || !me) {
       socket.emit(C.USER_MESSAGE, {
         code: E.CHALLENGE,
-        message: `There's been an unexpected error! Please refresh. [PLAY_CARD]`,
+        message: `There's been an unexpected error! Please refresh. [CHALLENGE]`,
       });
       return;
     }
@@ -312,8 +312,11 @@ io.on("connection", (socket) => {
   // TODO - why this no work
   socket.on(C.CALLOUT, () => {
     const game = myGame(users, games, socket.id);
-    if (game) {
-      game.callout();
+    const me = getUserBySocket(users, socket.id);
+
+    if (game && me) {
+      game.callout(me.token);
+      updatePlayers(users, games, game);
     }
   });
 

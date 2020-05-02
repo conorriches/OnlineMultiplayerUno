@@ -165,7 +165,7 @@ class Game {
 
   dealToPlayers() {
     for (let i = 0; i < this.players.length; i++) {
-      for (let c = 0; c < 7; c++) {
+      for (let c = 0; c < 2; c++) {
         const card = this.deck.pop();
         this.players[i].deck.push(card);
       }
@@ -266,12 +266,12 @@ class Game {
     });
   }
 
-  drawCard(me, force = false) {
+  drawCard(id) {
     if (this.players.some((p) => p.deck.length === 0)) return false;
 
     let res = false;
     this.players.map((p) => {
-      if (p.id === me || force) {
+      if (p.id === id) {
         if (this.deck.length > 0) {
           p.deck.push(this.deck.pop());
           p.uno = false;
@@ -638,7 +638,7 @@ class Game {
     return changed;
   }
 
-  challenge(me) {
+  challenge() {
     if (this.players.some((p) => p.deck.length === 0)) return false;
 
     const previousPlayer = this.previousPlayer();
@@ -669,7 +669,7 @@ class Game {
           this.criteria = [];
           // give four cards to accuser
           for (let i = 0; i < 4; i++) {
-            this.drawCard(previousPlayer.token, true);
+            this.drawCard(previousPlayer.token);
           }
         }
         this.challenged = true;
@@ -683,10 +683,15 @@ class Game {
   callout() {
     if (this.players.some((p) => p.deck.length === 0)) return false;
 
-    this.players = this.players.map((p) => {
-      if (p.deck.length === 1 && p.uno === false) {
+    this.players.forEach((p) => {
+      if (p.deck.length === 1 && !p.uno) {
+        this.addMessage(
+          false,
+          `${p.name} didn't declare Uno and was called out!`
+        );
+
         for (let i = 0; i < 4; i++) {
-          this.drawCard(p.id, true);
+          this.drawCard(p.id);
         }
       }
       return p;
