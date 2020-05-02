@@ -141,6 +141,11 @@ function App() {
                   <strong>Online Multiplayer Uno!</strong>
                 </div>
               </div>
+              <div className="navbar-item">
+                <div className="button is-danger">
+                  <strong>Beta - games may get cancelled during deploys</strong>
+                </div>
+              </div>
             </div>
 
             <div className="navbar-end">
