@@ -7,8 +7,6 @@ import Welcome from "./panels/Welcome";
 import Lobby from "./panels/Lobby";
 import Table from "./panels/Table";
 import Summary from "./panels/Summary";
-import useAudio from "./useAudio";
-import pop from "./pop.mp3";
 
 import "bulma";
 
@@ -23,9 +21,6 @@ function App() {
   const [userMessage, setUserMessage] = useState(false);
   const [connected, setConnected] = useState(false);
   const [showSummary, setShowSummary] = useState(true);
-  const [playing, toggle] = useAudio(pop);
-  const [topCard, setTopCard] = useState({ symbol: false, colour: false });
-  const [mute, setMute] = useState(false);
 
   useEffect(() => {
     socket.on("error", (e) => {
@@ -97,17 +92,6 @@ function App() {
       socket.emit(C.JOIN_GAME, gameId, name);
     }
   }, [gameId, name]);
-
-  useEffect(() => {
-    if (topCard && game.topCard) {
-      const diffCard =
-        topCard.symbol !== game.topCard.symbol ||
-        topCard.colour !== game.topCard.colour;
-      if (diffCard && !mute) {
-        setTopCard(game.topCard);
-      }
-    }
-  }, [game]);
 
   const exitGame = (playerId) => {
     let copy = "You're about to kick this user from the game. Continue?";
@@ -233,8 +217,6 @@ function App() {
                 user={user}
                 socket={socket}
                 onLeave={exitGame}
-                mute={mute}
-                onMute={setMute}
               />
             )}
           </>

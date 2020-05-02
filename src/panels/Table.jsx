@@ -5,9 +5,14 @@ import Decks from "../components/Decks";
 import Actions from "../components/Actions";
 import Messages from "../components/Messages";
 
-const Table = ({ game, user, socket, onLeave, mute, onMute }) => {
-  const [sort, setSort] = useState(false);
+import useAudio from "../useAudio";
+import pop from "../pop.mp3";
 
+const Table = ({ game, user, socket, onLeave }) => {
+  const [sort, setSort] = useState(false);
+  const [playing, toggle] = useAudio(pop);
+  const [mute, setMute] = useState(false);
+  const [lastPlayer, setLastPlayer] = useState();
   const player = game.players.filter((p) => p.id === user);
   const myCards = !!player.length ? player[0].deck : [];
 
@@ -42,6 +47,13 @@ const Table = ({ game, user, socket, onLeave, mute, onMute }) => {
     socket.emit("CALLOUT");
   };
 
+  useEffect(() => {
+    if (!mute && game.player.id !== lastPlayer) {
+      toggle();
+      setLastPlayer(game.player.id);
+    }
+  }, [game]);
+
   return (
     <section
       className={`table hero is-dark is-bold ${
@@ -58,7 +70,7 @@ const Table = ({ game, user, socket, onLeave, mute, onMute }) => {
               user={user}
               onLeave={onLeave}
               mute={mute}
-              onMute={onMute}
+              toggleMute={() => setMute(!mute)}
             />
           </div>
           <div className="column">

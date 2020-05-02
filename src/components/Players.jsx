@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "../css/card.css";
 
-const Players = ({ game, user, onLeave, mute, onMute }) => {
+const Players = ({ game, user, onLeave, mute, toggleMute }) => {
   const [showAbout, setShowAbout] = useState(false);
   const [showRules, setShowRules] = useState(false);
 
@@ -203,17 +203,16 @@ const Players = ({ game, user, onLeave, mute, onMute }) => {
                 <i className="fas fa-info-circle"></i>
               </span>
             </div>
-            <div
-              className="button is-light is-success"
-              onClick={() => {
-                onMute(!mute);
-              }}
-            >
-              <span className="icon has-text-dark">
-                <i
-                  className={`fas ${mute ? "fa-volume-mute" : "fa-volume-up"}`}
-                ></i>
-              </span>
+            <div className="button is-light is-success" onClick={toggleMute}>
+              {mute ? (
+                <span className="icon has-text-dark" key="fa-volume-off">
+                  <i className="fas fa-volume-off"></i>
+                </span>
+              ) : (
+                <span className="icon has-text-dark" key="fa-volume-up">
+                  <i className="fas fa-volume-up"></i>
+                </span>
+              )}
             </div>
             <div
               className="button is-light is-danger"
