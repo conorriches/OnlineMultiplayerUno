@@ -12,6 +12,7 @@
   transition: transform 0.1s;
   background-position-x: 0px;
   background-position-y: 1350px;
+  min-width: 100px;
 }
 
 .draw .card {

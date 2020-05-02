@@ -128,7 +128,11 @@ function App() {
 
   return (
     <>
-      <div className="container is-widescreen">
+      <div
+        className={` ${
+          game && game.players && game.started ? "" : "container is-widescreen"
+        }`}
+      >
         <nav className="navbar" role="navigation" aria-label="main navigation">
           <div id="navbarBasicExample" className="navbar-menu">
             <div className="navbar-brand">
@@ -144,7 +148,7 @@ function App() {
                 <div className="buttons">
                   {gameId && (
                     <div className="button is-primary">
-                      <strong>Game #{gameId}</strong>
+                      <strong>#{gameId}</strong>
                     </div>
                   )}
                   {(name || user) && (

@@ -44,7 +44,7 @@ const Table = ({ game, user, socket, onLeave, mute, onMute }) => {
 
   return (
     <section
-      className={`table hero is-dark ${
+      className={`table hero is-dark is-bold ${
         game.discardLength === 1 &&
         !game.players.some((p) => p.deck.length !== 7) &&
         "animate"
@@ -52,7 +52,7 @@ const Table = ({ game, user, socket, onLeave, mute, onMute }) => {
     >
       <div className="hero-body">
         <div className="columns">
-          <div className="players column">
+          <div className="players column is-one-quarter">
             <Players
               game={game}
               user={user}
@@ -61,9 +61,7 @@ const Table = ({ game, user, socket, onLeave, mute, onMute }) => {
               onMute={onMute}
             />
           </div>
-        </div>
-        <div className="columns">
-          <div className="column is-two-thirds">
+          <div className="column">
             <Decks game={game} drawCard={drawCard} />
             <div className="actions box">
               {game.player.id === user && (
@@ -83,6 +81,7 @@ const Table = ({ game, user, socket, onLeave, mute, onMute }) => {
                   <div className="column">
                     {myCards
                       .concat()
+                      .reverse()
                       .sort((a, b) => {
                         if (sort === "COLOUR") {
                           return a.colour > b.colour;
@@ -92,22 +91,18 @@ const Table = ({ game, user, socket, onLeave, mute, onMute }) => {
                         }
                         return 0;
                       })
-                      .map((c) => {
-                        return (
+                      .map(
+                        (c, i) =>
                           c && (
-                            <Card
-                              symbol={c.symbol}
-                              colour={c.colour || ""}
-                              onClick={playCard}
-                            />
+                            <span key={`card-${i}`}>
+                              <Card
+                                symbol={c.symbol}
+                                colour={c.colour || ""}
+                                onClick={playCard}
+                              />
+                            </span>
                           )
-                        );
-                      })}
-                    {myCards.length > 30 && (
-                      <span className="draw">
-                        <Card onClick={drawCard} />
-                      </span>
-                    )}
+                      )}
                   </div>
                 </div>
               </div>
@@ -117,7 +112,7 @@ const Table = ({ game, user, socket, onLeave, mute, onMute }) => {
                   <input
                     type="radio"
                     name="foobar"
-                    onClick={() => setSort("SYMBOL")}
+                    onChange={() => setSort("SYMBOL")}
                     {...{ checked: sort === "SYMBOL" }}
                   />
                   Symbol
@@ -126,7 +121,7 @@ const Table = ({ game, user, socket, onLeave, mute, onMute }) => {
                   <input
                     type="radio"
                     name="foobar"
-                    onClick={() => setSort("COLOUR")}
+                    onChange={() => setSort("COLOUR")}
                     {...{ checked: sort === "COLOUR" }}
                   />
                   Colour
@@ -135,7 +130,7 @@ const Table = ({ game, user, socket, onLeave, mute, onMute }) => {
                   <input
                     type="radio"
                     name="foobar"
-                    onClick={() => setSort(false)}
+                    onChange={() => setSort(false)}
                     {...{ checked: !sort }}
                   />
                   None
@@ -143,7 +138,7 @@ const Table = ({ game, user, socket, onLeave, mute, onMute }) => {
               </div>
             </div>
           </div>
-          <div className="events column">
+          <div className="events column is-one-quarter">
             <Messages
               game={game}
               user={user}

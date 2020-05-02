@@ -6,4 +6,9 @@ module.exports = {
     protocol: "http",
     host: "localhost",
   },
+  game: {
+    maxExtraDraw: 5,
+    deckTwoThreshold: 3,
+    deckThreeThreshold: 8,
+  },
 };

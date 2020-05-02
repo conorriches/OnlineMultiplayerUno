@@ -31,7 +31,7 @@ const {
   myGame,
 } = require("./helpers");
 const { C, E } = require("./constants");
-const config = require("../config");
+const Config = require("../config");
 const logger = require("./logger");
 const Game = require("./game/game");
 
@@ -39,7 +39,6 @@ const games = [];
 const users = [];
 
 //io.origins("*:*");
-//io.listen(config.sockets.port);
 
 io.on("connection", (socket) => {
   logger.verbose(`Socket Connect: ${socket.id}`);
@@ -61,6 +60,16 @@ io.on("connection", (socket) => {
       }
       logger.warn(`Generating ID attempt: ${i}`);
     }
+  };
+
+  const deleteGame = (gameIdToDelete) => {
+    let index;
+    games.forEach((g, i) => {
+      if (g.id === gameIdToDelete) {
+        index = i;
+      }
+    });
+    games.splice(index, 1);
   };
 
   socket.on(C.REGISTER_USER, (token, name) => {
@@ -176,13 +185,27 @@ io.on("connection", (socket) => {
     }
 
     if (me.token === game.player) {
-      const result = game.drawCard(me.token);
-      if (game.criteria) {
-        if (!game.criteria) game.shouldIncrementPlayer();
-      }
+      let hasMatch = false;
+      game.players.forEach((p) => {
+        if (p.id === me.token) {
+          hasMatch = p.deck.some((c) =>
+            game.matches(true, game.discard[game.discard.length - 1], c)
+          );
+        }
+      });
+      if (
+        game.criteria.length ||
+        !hasMatch ||
+        game.drawCount < Config.game.maxExtraDraw
+      ) {
+        const result = game.drawCard(me.token);
+        if (game.criteria) {
+          if (!game.criteria) game.shouldIncrementPlayer();
+        }
 
-      if (result) {
-        updatePlayers(users, games, game);
+        if (result) {
+          updatePlayers(users, games, game);
+        }
       }
     }
   });
@@ -245,12 +268,14 @@ io.on("connection", (socket) => {
     const response = game.playCard(card, me.token);
 
     if (response) {
-      game.shouldIncrementPlayer();
       game.players
         .filter((p) => p.deck.length == 1)
-        .forEach((p) =>
-          game.addMessage(false, `${name} has just one card left`)
+        .forEach(
+          (p) =>
+            p.id === me.token &&
+            game.addMessage(false, `${name} has just one card left`)
         );
+      game.shouldIncrementPlayer();
 
       updatePlayers(users, games, game);
     }
@@ -300,6 +325,14 @@ io.on("connection", (socket) => {
       const isLead = game.lead === me.token;
       const isMe = playerId === me.token;
       const name = game.players.forEach((p) => p.id === playerId);
+
+      if (isLead && isMe) {
+        return deleteGame(game.id);
+      }
+
+      if (game.players.length === 1) {
+        return deleteGame(game.id);
+      }
 
       if (isLead || isMe) {
         game.removePlayer(playerId, name ? name[0].name : false);

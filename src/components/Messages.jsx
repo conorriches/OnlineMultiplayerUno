@@ -22,7 +22,7 @@ const Messages = ({ game, user, onUno, onChallenge, onCallout }) => {
 
   return (
     <div className="box">
-      <h2 className="subtitle">Game Actions:</h2>
+      <h2 className="subtitle">Actions</h2>
       <div className="level">
         <div className="level-item has-text-centered draw">
           <button
@@ -58,27 +58,25 @@ const Messages = ({ game, user, onUno, onChallenge, onCallout }) => {
           </button>
         </div>
       </div>
-      <h2 className="subtitle">Events:</h2>
+      <h2 className="subtitle">Events</h2>
       <div className="level">
         <div className="messages">
           {game.messages
             .slice(0)
             .reverse()
-            .map((m) => {
+            .map((m, i) => {
               return (
-                <li>
-                  <span
-                    className={`tag ${
-                      m.user ? "is-primary" : "is-warning"
-                    }  is-light`}
-                  >
-                    {m.user || (
-                      <span className="icon">
-                        <i className="fas fa-user-shield"></i>
-                      </span>
-                    )}
-                  </span>
-                  {m.message}
+                <li key={`message-${m.message}-${i}`}>
+                  {!m.user && (
+                    <span className={`tag is-warning is-light`}>
+                      {
+                        <span className="icon">
+                          <i className="fas fa-user-shield"></i>
+                        </span>
+                      }
+                    </span>
+                  )}
+                  {m.user || ""} {m.message}
                 </li>
               );
             })}

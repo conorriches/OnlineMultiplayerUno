@@ -28,6 +28,7 @@ const tempNames = [
   "Rigel",
 ];
 
+const Config = require("../../config");
 class Game {
   constructor({ id }) {
     this.id = id;
@@ -51,6 +52,7 @@ class Game {
       direction: this.direction,
       topCard: this.discard[this.discard.length - 1],
       discardLength: this.discard.length,
+      discard: this.discard.filter((c, i) => i > this.discard.length - 4),
       deckLength: this.deck.length,
       lead: this.lead,
       players: this.players.map((p) => {
@@ -104,10 +106,10 @@ class Game {
         `game started with ${this.players.length} players!`
       );
       this.generateDeck();
-      if (this.players.count > 4) {
+      if (this.players.length >= Config.game.deckTwoThreshold) {
         this.generateDeck();
       }
-      if (this.players.count > 8) {
+      if (this.players.length >= Config.game.deckThreeThreshold) {
         this.generateDeck();
       }
 
@@ -250,7 +252,7 @@ class Game {
       }
     });
 
-    if (game.player === p.id) {
+    if (this.player === id) {
       this.player = this.nextPlayer();
     }
 
@@ -404,6 +406,7 @@ class Game {
     if (this.matches(user === this.player, topCard, card)) {
       if (user !== this.player) {
         this.player = user;
+        this.addMessage(usersName, `jumps in!`);
       }
       if (this.criteria.filter((c) => c !== SC).length) {
         //cards to pick up
@@ -443,7 +446,7 @@ class Game {
         if (card.symbol === 7) {
           const choice = this.players.length % 2 !== 0;
 
-          if (choice) {
+          if (true || choice) {
             this.addMessage(
               false,
               `Swap hands! ${usersName} must choose who to swap with`
@@ -473,6 +476,10 @@ class Game {
         if (card.symbol == SD) {
           this.direction = !this.direction;
         }
+
+        this.players.forEach((p) => {
+          if (p.deck.length > 1) p.uno = false;
+        });
 
         // Add criteria to stack
         if (card.symbol === P4) {

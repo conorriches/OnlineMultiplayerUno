@@ -13,23 +13,23 @@ const Summary = ({ game, onClose }) => {
         <section className="hero is-primary">
           <div className="hero-body">
             <div className="container">
-              <h1 className="title">Winner: {order[0].name}</h1>
+              <h1 className="title">Winner is {order[0].name}!</h1>
               <h2 className="subtitle">Congratulations!</h2>
 
               <div className="box">
                 <h2 className="subtitle">Summary:</h2>
                 {order.map((p) => {
                   return (
-                    <div className="level">
-                      <div className="level-item level-left">{p.name}</div>
-                      <div className="level-item">
+                    <div className="columns">
+                      <div className="column">{p.name}</div>
+                      <div className="column is-one-third">
                         <progress
                           className="progress is-medium is-danger"
                           value={p.deck.length}
                           max={maxCards}
                         ></progress>
                       </div>
-                      <div className="level-item level-right">
+                      <div className="column is-one-quarter">
                         <div className="tags are-medium has-addons">
                           <span className="tag is-black">
                             <span className="icon is-small">

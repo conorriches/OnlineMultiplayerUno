@@ -103,102 +103,105 @@ const Players = ({ game, user, onLeave, mute, onMute }) => {
       </div>
     );
 
-  return (
-    <div className="box players">
-      {<AboutModal />}
-      {<RulesModal />}
-      <div className="level">
-        {game.players
-          .slice()
-          .sort(() => game.direction)
-          .map((p, i) => (
-            <>
-              <div className="level-item is-narrow player" key={p.id}>
-                <div className="tags has-addons">
-                  <span
-                    className={`tag is-medium ${
-                      p.id === user && p.id === game.player.id
-                        ? "is-success"
-                        : "is-dark"
-                    }`}
-                  >
-                    <div className="columns">
-                      {p.id === user ? (
-                        <div className="column">
-                          <span className="icon has-text-light">
-                            <i className="fas fa-user"></i>
-                          </span>
-                        </div>
-                      ) : (
-                        ""
-                      )}
-                      {p.id === game.player.id ? (
-                        <div className="column">
-                          <span className="icon has-text-warning">
-                            <i className="fas fa-gamepad"></i>
-                          </span>
-                        </div>
-                      ) : (
-                        ""
-                      )}
-                      <div className="column">{p.name}</div>
-                    </div>
-                  </span>
-                  <span
-                    className={`tag is-medium ${
-                      p.uno ? "is-danger" : "is-black"
-                    }`}
-                  >
-                    <div className="columns">
-                      {p.uno && (
-                        <div className="column">
-                          <span
-                            className={`icon  ${
-                              p.uno ? "has-text-light" : "has-text-danger"
-                            }`}
-                          >
-                            <i className="fas fa-bullhorn"></i>
-                          </span>
-                        </div>
-                      )}
-                      <div className="column">{p.deck.length}</div>
-
-                      {p.deck.length === 1 && (
-                        <div className="column">
-                          <span
-                            className={`icon  ${
-                              p.uno ? "has-text-light" : "has-text-danger"
-                            }`}
-                          >
-                            <i className="fas fa-exclamation"></i>
-                          </span>
-                        </div>
-                      )}
-                    </div>
+  const playerTag = (p, i) => {
+    const isMe = p.id === user;
+    const isPlayer = p.id === game.player.id;
+    return (
+      <div className="level-item is-narrow is-medium player " key={p.id}>
+        <div className="tags has-addons is-fullwidth">
+          <span className={`tag is-medium is-black ${isMe && "is-success"}`}>
+            {p.id === user ? (
+              <span className={`icon ${isMe && isPlayer && "blink"}`}>
+                <i className="fas fa-user"></i>
+              </span>
+            ) : (
+              ""
+            )}
+            <span>{p.name}</span>
+          </span>
+          {p.id === game.player.id ? (
+            <span className={`tag is-medium is-link `}>
+              <div className="columns">
+                <div className="column">
+                  <span className="icon has-text-white">
+                    <i className="fas fa-gamepad"></i>
                   </span>
                 </div>
               </div>
-              <div className="level-item is-narrow">
-                {i < game.players.length - 1 ? (
-                  <span className="icon">
-                    <i className="fas fa-arrow-right"></i>
-                  </span>
-                ) : (
-                  <span className="icon">
-                    <i className="fas fa-redo"></i>
-                  </span>
-                )}
-              </div>
-            </>
-          ))}
+            </span>
+          ) : (
+            ""
+          )}
+          <span className={`tag is-medium ${p.uno ? "is-danger" : "is-black"}`}>
+            {p.uno && (
+              <span className={`icon has-text-light`}>
+                <i className="fas fa-bullhorn"></i>
+              </span>
+            )}
+            <span>{p.deck.length}</span>
 
+            {p.deck.length === 1 && (
+              <span
+                className={`icon  ${
+                  p.uno ? "has-text-light" : "has-text-danger"
+                }`}
+              >
+                <i className="fas fa-exclamation"></i>
+              </span>
+            )}
+          </span>
+        </div>
+      </div>
+    );
+  };
+
+  const renderDown = () => {
+    return (
+      <div className="level-item is-narrow" key="fa-arrow-down">
+        <span className="icon">
+          <i className="fas fa-arrow-down"></i>
+        </span>
+      </div>
+    );
+  };
+
+  const renderUp = () => {
+    return (
+      <div className="level-item is-narrow" key="fa-arrow-up">
+        <span className="icon">
+          <i className="fas fa-arrow-up"></i>
+        </span>
+      </div>
+    );
+  };
+
+  return (
+    <div className="box players">
+      <h2 className="subtitle">Players</h2>
+      {<AboutModal />}
+      {<RulesModal />}
+      <div>
+        {game.players.map((p, i) => (
+          <div className="level" key={`player-list-item-${p.id}`}>
+            {playerTag(p, i)}
+            {game.direction ? renderDown() : renderUp()}
+          </div>
+        ))}
+        <hr />
         <div className="level-item level-right">
           <div className="buttons">
-            <div className="button is-light" onClick={() => setShowRules(true)}>
-              Rules
+            <div
+              className="button is-light is-success"
+              onClick={() => setShowRules(true)}
+            >
+              <span className="icon has-text-dark">
+                <i className="fas fa-book"></i>
+              </span>
             </div>
             <div className="button is-light" onClick={() => setShowAbout(true)}>
-              About
+              <span className="icon has-text-dark">
+                <i className="fas fa-info-circle"></i>
+              </span>
             </div>
             <div
               className="button is-light is-success"
