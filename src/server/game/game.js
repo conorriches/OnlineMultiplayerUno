@@ -165,7 +165,7 @@ class Game {
 
   dealToPlayers() {
     for (let i = 0; i < this.players.length; i++) {
-      for (let c = 0; c < 2; c++) {
+      for (let c = 0; c < 7; c++) {
         const card = this.deck.pop();
         this.players[i].deck.push(card);
       }
