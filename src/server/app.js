@@ -4,6 +4,7 @@ const app = express();
 const server = require("http").Server(app);
 const io = require("socket.io")(server);
 
+const { standard, house_rules } = require("./rules");
 const {
   getPlayersByGameId,
   getUserBySocket,
@@ -82,7 +83,7 @@ io.on("connection", (socket) => {
 
   socket.on(ACTION.CREATE_GAME, () => {
     const id = generateId();
-    games.push(new Game({ id }));
+    games.push(new Game({ id, rules: house_rules }));
     socket.emit(ACTION.GAME_ID, id);
   });
 

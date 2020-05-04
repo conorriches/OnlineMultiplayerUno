@@ -15,7 +15,7 @@ const tempNames = [
 ];
 
 class Game {
-  constructor({ id }) {
+  constructor({ id, rules: { matches, playCard, action } }) {
     this.id = id;
     this.started = false;
     this.direction = true;
@@ -28,6 +28,13 @@ class Game {
     this.messages = [];
     this.challenged = false;
     this.drawCount = 0;
+
+    // Custom rules
+    this.rules = {
+      matches,
+      playCard,
+      action,
+    };
   }
 
   status(token) {
@@ -304,81 +311,8 @@ class Game {
     this.shuffleDeck();
   }
 
-  isNumber(c) {
-    return CARD.numbers.indexOf(c.symbol) > -1;
-  }
-  isSymbol(c) {
-    return CARD.symbols.indexOf(c.symbol) > -1;
-  }
-  isWild(c) {
-    return CARD.wilds.indexOf(c.symbol) > -1;
-  }
-
-  matches(ownGo, c1, c2) {
-    if (!c1 || !c2) return false;
-
-    // Anyone can jump in on an exact match
-    if (c1.colour === c2.colour && c1.symbol === c2.symbol) {
-      return true;
-    }
-
-    if (ownGo) {
-      if (this.isNumber(c2)) {
-        if (this.isNumber(c1)) {
-          // Number on Number
-          if (c1.symbol === c2.symbol) return true;
-          if (c1.colour === c2.colour) {
-            if (Math.abs(c1.symbol - c2.symbol) < 2) {
-              return true;
-            }
-            if (
-              (c1.symbol === 0 && c2.symbol === 9) ||
-              (c2.symbol === 0 && c1.symbol === 9)
-            ) {
-              return true;
-            }
-            // Playing on symbol / wild
-            if (
-              CARD.wilds.indexOf(c1.symbol) > -1 ||
-              CARD.symbols.indexOf(c1.symbol) > -1
-            ) {
-              return true;
-            }
-            return false;
-          } else {
-            return false;
-          }
-        }
-        if (this.isSymbol(c1)) {
-          // Number on Symbol
-          return c1.colour == c2.colour;
-        }
-        if (this.isWild(c1)) {
-          // Number on wild (change colour / +4)
-          return c1.colour == c2.colour;
-        }
-      }
-
-      //User is playing a symbol
-      if (this.isSymbol(c2)) {
-        if (this.isNumber(c1)) {
-          return c1.colour === c2.colour;
-        }
-        if (this.isSymbol(c1)) {
-          return c1.symbol === c2.symbol || c1.colour === c2.colour;
-        }
-        if (this.isWild(c1)) {
-          return c1.colour == c2.colour;
-        }
-      }
-
-      //User is playing a wildcard
-      if (this.isWild(c2)) {
-        return true;
-      }
-    }
-
-    return false;
+  matches(playerId, c1, c2) {
+    return this.rules.matches(playerId, this.player, c1, c2);
   }
 
   playCard(card, user) {
@@ -388,7 +322,7 @@ class Game {
     if (this.players.some((p) => p.deck.length === 0)) return false;
 
     //TODO user === this.player
-    if (this.matches(user === this.player, topCard, card)) {
+    if (this.matches(user, topCard, card)) {
       if (user !== this.player) {
         this.player = user;
         this.addMessage(usersName, `jumps in!`);
@@ -638,7 +572,7 @@ class Game {
         this.addMessage(false, "CHALLENGE!");
         const prevCard = this.discard[this.discard.length - 2];
         const wasMatch = p.deck.some(
-          (c) => this.matches(true, prevCard, c) && c.symbol !== CARD.P4
+          (c) => this.matches(this.player, prevCard, c) && c.symbol !== CARD.P4
         );
 
         if (!wasMatch) {

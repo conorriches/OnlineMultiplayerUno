@@ -1,4 +1,6 @@
-const matches = (playerId, playerGoId, topCard, card) => {
+const { isNumber, isSymbol, isWild } = require("../../helpers/game");
+
+const matches = (playerId, playerGoId, c1, c2) => {
   if (!c1 || !c2) return false;
 
   // Anyone can jump in on an exact match
@@ -6,9 +8,9 @@ const matches = (playerId, playerGoId, topCard, card) => {
     return true;
   }
 
-  if (ownGo) {
-    if (this.isNumber(c2)) {
-      if (this.isNumber(c1)) {
+  if (playerId === playerGoId) {
+    if (isNumber(c2)) {
+      if (isNumber(c1)) {
         // Number on Number
         if (c1.symbol === c2.symbol) return true;
         if (c1.colour === c2.colour) {
@@ -30,31 +32,31 @@ const matches = (playerId, playerGoId, topCard, card) => {
           return false;
         }
       }
-      if (this.isSymbol(c1)) {
+      if (isSymbol(c1)) {
         // Number on Symbol
         return c1.colour == c2.colour;
       }
-      if (this.isWild(c1)) {
+      if (isWild(c1)) {
         // Number on wild (change colour / +4)
         return c1.colour == c2.colour;
       }
     }
 
     //User is playing a symbol
-    if (this.isSymbol(c2)) {
-      if (this.isNumber(c1)) {
+    if (isSymbol(c2)) {
+      if (isNumber(c1)) {
         return c1.colour === c2.colour;
       }
-      if (this.isSymbol(c1)) {
+      if (isSymbol(c1)) {
         return c1.symbol === c2.symbol || c1.colour === c2.colour;
       }
-      if (this.isWild(c1)) {
+      if (isWild(c1)) {
         return c1.colour == c2.colour;
       }
     }
 
     //User is playing a wildcard
-    if (this.isWild(c2)) {
+    if (isWild(c2)) {
       return true;
     }
   }
