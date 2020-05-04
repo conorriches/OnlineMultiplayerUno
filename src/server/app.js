@@ -4,6 +4,19 @@ const app = express();
 const server = require("http").Server(app);
 const io = require("socket.io")(server);
 
+const {
+  getPlayersByGameId,
+  getUserBySocket,
+  registerUser,
+  generateToken,
+  getGameById,
+  myGame,
+} = require("./helpers");
+const { ACTION, ERROR } = require("./constants");
+const Config = require("../config");
+const logger = require("./logger");
+const Game = require("./game/game");
+
 app.use(express.static(path.join(__dirname, "../", "../", "build")));
 
 app.get("/", function (req, res) {
@@ -22,19 +35,6 @@ server.listen(process.env.PORT, () =>
   )
 );
 
-const {
-  getPlayersByGameId,
-  getUserBySocket,
-  registerUser,
-  generateToken,
-  getGameById,
-  myGame,
-} = require("./helpers");
-const { C, E } = require("./constants");
-const Config = require("../config");
-const logger = require("./logger");
-const Game = require("./game/game");
-
 const games = [];
 const users = [];
 
@@ -46,7 +46,7 @@ io.on("connection", (socket) => {
   const updatePlayers = (users, games, game) => {
     getPlayersByGameId(users, games, game.id).forEach((s) => {
       const state = game.status(s.id);
-      io.to(s.socket).emit(C.GAME_STATE, state);
+      io.to(s.socket).emit(ACTION.GAME_STATE, state);
     });
   };
 
@@ -72,39 +72,39 @@ io.on("connection", (socket) => {
     games.splice(index, 1);
   };
 
-  socket.on(C.REGISTER_USER, (token, name) => {
+  socket.on(ACTION.REGISTER_USER, (token, name) => {
     if (!token) {
       token = generateToken();
     }
     registerUser(users, token, socket.id);
-    socket.emit(C.PLAYER_ID, { playerId: token });
+    socket.emit(ACTION.PLAYER_ID, { playerId: token });
   });
 
-  socket.on(C.CREATE_GAME, () => {
+  socket.on(ACTION.CREATE_GAME, () => {
     const id = generateId();
     games.push(new Game({ id }));
-    socket.emit(C.GAME_ID, id);
+    socket.emit(ACTION.GAME_ID, id);
   });
 
-  socket.on(C.SET_NAME, (name) => {
+  socket.on(ACTION.SET_NAME, (name) => {
     const game = myGame(users, games, socket.id);
     const me = getUserBySocket(users, socket.id);
 
     if (game && me) {
       if (game.players.some((p) => p.name === name)) {
-        socket.emit(C.USER_MESSAGE, {
-          code: E.NAME_EXISTS,
+        socket.emit(ACTION.USER_MESSAGE, {
+          code: ERROR.NAME_EXISTS,
           message: `You can't set your player name to ${name} as it is already taken.`,
         });
       } else {
         game.setName(me, name);
-        socket.emit(C.NAME, name);
+        socket.emit(ACTION.NAME, name);
         updatePlayers(users, games, game);
       }
     }
   });
 
-  socket.on(C.JOIN_GAME, (gameId, name) => {
+  socket.on(ACTION.JOIN_GAME, (gameId, name) => {
     const me = getUserBySocket(users, socket.id);
     const game = getGameById(games, gameId);
 
@@ -117,52 +117,52 @@ io.on("connection", (socket) => {
               game.lead = me.token;
             }
             if (game.players.some((p) => p.name === name)) {
-              socket.emit(C.USER_MESSAGE, {
-                code: E.NAME_EXISTS,
+              socket.emit(ACTION.USER_MESSAGE, {
+                code: ERROR.NAME_EXISTS,
                 message: `You can't join game #${gameId} as your player name is already taken (${name}).`,
               });
             } else {
               game.addPlayer({ id: me.token, name });
-              socket.emit(C.PLAYER_ID, { playerId: me.token });
+              socket.emit(ACTION.PLAYER_ID, { playerId: me.token });
             }
           } else {
-            socket.emit(C.USER_MESSAGE, {
-              code: E.STARTED,
+            socket.emit(ACTION.USER_MESSAGE, {
+              code: ERROR.STARTED,
               message: `You can't join game #${gameId} as it has already started.`,
             });
           }
         } else {
-          socket.emit(C.USER_MESSAGE, {
-            code: E.FULL,
+          socket.emit(ACTION.USER_MESSAGE, {
+            code: ERROR.FULL,
             message: `You can't join game #${gameId} as is full up.`,
           });
         }
       }
 
-      socket.emit(C.GAME_ID, game.id); //TODO can we remove?
+      socket.emit(ACTION.GAME_ID, game.id); //TODO can we remove?
       updatePlayers(users, games, game);
     } else {
       if (!game) {
-        socket.emit(C.USER_MESSAGE, {
-          code: E.NO_GAME,
+        socket.emit(ACTION.USER_MESSAGE, {
+          code: ERROR.NO_GAME,
           message: `There is no game #${gameId}!`,
         });
       } else if (!me) {
-        socket.emit(C.USER_MESSAGE, {
-          code: E.NO_YOU,
+        socket.emit(ACTION.USER_MESSAGE, {
+          code: ERROR.NO_YOU,
           message: `I don't know who you are!`,
         });
       }
     }
   });
 
-  socket.on(C.START_GAME, () => {
+  socket.on(ACTION.START_GAME, () => {
     const game = myGame(users, games, socket.id);
     const me = getUserBySocket(users, socket.id);
 
     if (!game || !me) {
-      return socket.emit(C.USER_MESSAGE, {
-        code: E.START,
+      return socket.emit(ACTION.USER_MESSAGE, {
+        code: ERROR.START,
         message: `There's been an unexpected error! Please refresh. [START_GAME]`,
       });
     }
@@ -173,13 +173,13 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on(C.DRAW_CARD, () => {
+  socket.on(ACTION.DRAW_CARD, () => {
     const game = myGame(users, games, socket.id);
     const me = getUserBySocket(users, socket.id);
 
     if (!game || !me) {
-      return socket.emit(C.USER_MESSAGE, {
-        code: E.DRAW,
+      return socket.emit(ACTION.USER_MESSAGE, {
+        code: ERROR.DRAW,
         message: `There's been an unexpected error! Please refresh. [DRAW_CARD]`,
       });
     }
@@ -210,12 +210,12 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on(C.CHOOSE_COLOUR, (colour) => {
+  socket.on(ACTION.CHOOSE_COLOUR, (colour) => {
     const game = myGame(users, games, socket.id);
     const me = getUserBySocket(users, socket.id);
     if (!game || !me) {
-      socket.emit(C.USER_MESSAGE, {
-        code: E.COLOUR,
+      socket.emit(ACTION.USER_MESSAGE, {
+        code: ERROR.COLOUR,
         message: `There's been an unexpected error! Please refresh. [CHOOSE_COLOUR]`,
       });
     }
@@ -229,12 +229,12 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on(C.CHOOSE_PLAYER, (player) => {
+  socket.on(ACTION.CHOOSE_PLAYER, (player) => {
     const game = myGame(users, games, socket.id);
     const me = getUserBySocket(users, socket.id);
     if (!game || !me) {
-      socket.emit(C.USER_MESSAGE, {
-        code: E.COLOUR,
+      socket.emit(ACTION.USER_MESSAGE, {
+        code: ERROR.COLOUR,
         message: `There's been an unexpected error! Please refresh. [CHOOSE_PLAYER]`,
       });
     }
@@ -254,12 +254,12 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on(C.PLAY_CARD, (card) => {
+  socket.on(ACTION.PLAY_CARD, (card) => {
     const game = myGame(users, games, socket.id);
     const me = getUserBySocket(users, socket.id);
     if (!game || !me) {
-      return socket.emit(C.USER_MESSAGE, {
-        code: E.PLAY,
+      return socket.emit(ACTION.USER_MESSAGE, {
+        code: ERROR.PLAY,
         message: `There's been an unexpected error! Please refresh. [PLAY_CARD]`,
       });
     }
@@ -281,12 +281,12 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on(C.DECLARE_UNO, () => {
+  socket.on(ACTION.DECLARE_UNO, () => {
     const game = myGame(users, games, socket.id);
     const me = getUserBySocket(users, socket.id);
     if (!game || !me) {
-      socket.emit(C.USER_MESSAGE, {
-        code: E.DECLARE,
+      socket.emit(ACTION.USER_MESSAGE, {
+        code: ERROR.DECLARE,
         message: `There's been an unexpected error! Please refresh. [PLAY_CARD]`,
       });
       return;
@@ -295,12 +295,12 @@ io.on("connection", (socket) => {
     game.declareUno(me) && updatePlayers(users, games, game);
   });
 
-  socket.on(C.CHALLENGE, () => {
+  socket.on(ACTION.CHALLENGE, () => {
     const game = myGame(users, games, socket.id);
     const me = getUserBySocket(users, socket.id);
     if (!game || !me) {
-      socket.emit(C.USER_MESSAGE, {
-        code: E.CHALLENGE,
+      socket.emit(ACTION.USER_MESSAGE, {
+        code: ERROR.CHALLENGE,
         message: `There's been an unexpected error! Please refresh. [CHALLENGE]`,
       });
       return;
@@ -310,7 +310,7 @@ io.on("connection", (socket) => {
   });
 
   // TODO - why this no work
-  socket.on(C.CALLOUT, () => {
+  socket.on(ACTION.CALLOUT, () => {
     const game = myGame(users, games, socket.id);
     const me = getUserBySocket(users, socket.id);
 
@@ -320,7 +320,7 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on(C.EXIT_GAME, (playerId) => {
+  socket.on(ACTION.EXIT_GAME, (playerId) => {
     const game = myGame(users, games, socket.id);
     const me = getUserBySocket(users, socket.id);
 

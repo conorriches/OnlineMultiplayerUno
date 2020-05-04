@@ -1,5 +1,5 @@
 module.exports = {
-  C: {
+  ACTION: {
     GAME_STATE: "GAME_STATE",
     REGISTER_USER: "REGISTER_USER",
     CREATE_GAME: "CREATE_GAME",
@@ -19,7 +19,7 @@ module.exports = {
     CALLOUT: "CALLOUT",
     EXIT_GAME: "EXIT_GAME",
   },
-  E: {
+  ERROR: {
     NAME_EXISTS: "E_NAME_EXIST",
     STARTED: "E_STARTED",
     FULL: "E_FULL",
@@ -31,5 +31,44 @@ module.exports = {
     PLAY: "E_PLAY",
     CHALLENGE: "E_CHALLENGE",
     DECLARE: "E_DECLARE",
+  },
+  CRITERIA: {
+    CC: "CHOOSECOLOUR",
+    SW: "SWAPWITH",
+    DC: "DRAWCARD",
+  },
+  CARD: {
+    COLOUR: {
+      RED: "RED",
+      GREEN: "GREEN",
+      BLUE: "BLUE",
+      YELLOW: "YELLOW",
+    },
+    P2: "PICKUP2",
+    SK: "SKIP",
+    SD: "SWITCHDIRECTION",
+    P4: "PICKUP4",
+    SC: "SETCOLOUR",
+    NC: "NOCOLOUR",
+    get numbers() {
+      return [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+    },
+    get symbols() {
+      return [this.P2, this.SK, this.SD];
+    },
+    get wilds() {
+      return [this.P4, this.SC];
+    },
+    get colours() {
+      return [
+        this.COLOUR.RED,
+        this.COLOUR.GREEN,
+        this.COLOUR.BLUE,
+        this.COLOUR.YELLOW,
+      ];
+    },
+    get actions() {
+      return [this.DC, this.CC, this.SW];
+    },
   },
 };

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import io from "socket.io-client";
 
 import config from "./config";
-import { C, E } from "./server/constants";
+import { ACTION, ERROR } from "./server/constants";
 import Welcome from "./panels/Welcome";
 import Lobby from "./panels/Lobby";
 import Table from "./panels/Table";
@@ -41,30 +41,30 @@ function App() {
       setUser(playerId);
     });
 
-    socket.on(C.GAME_ID, (id) => {
+    socket.on(ACTION.GAME_ID, (id) => {
       localStorage.setItem("gameId", id);
       setGameId(id);
     });
 
-    socket.on(C.PLAYER_ID, (obj) => {
+    socket.on(ACTION.PLAYER_ID, (obj) => {
       localStorage.setItem("playerId", obj.playerId);
       setUser(obj.playerId);
     });
 
-    socket.on(C.USER_MESSAGE, (obj) => {
-      if (obj.code === E.NO_GAME) {
+    socket.on(ACTION.USER_MESSAGE, (obj) => {
+      if (obj.code === ERROR.NO_GAME) {
         localStorage.removeItem("gameId");
         setGameId(false);
       }
       setUserMessage(obj.message);
     });
 
-    socket.on(C.GAME_STATE, (state) => {
+    socket.on(ACTION.GAME_STATE, (state) => {
       setUserMessage(false);
       state && setGame(state);
     });
 
-    socket.on(C.NAME, (incomingName) => {
+    socket.on(ACTION.NAME, (incomingName) => {
       if (incomingName) {
         localStorage.setItem("name", incomingName);
         setName(incomingName);
@@ -83,13 +83,13 @@ function App() {
 
   useEffect(() => {
     if (user) {
-      socket.emit(C.REGISTER_USER, user);
+      socket.emit(ACTION.REGISTER_USER, user);
     }
   }, [user]);
 
   useEffect(() => {
     if (gameId) {
-      socket.emit(C.JOIN_GAME, gameId, name);
+      socket.emit(ACTION.JOIN_GAME, gameId, name);
     }
   }, [gameId, name]);
 
@@ -100,7 +100,7 @@ function App() {
     }
     const sure = window.confirm(copy);
     if (game && sure) {
-      socket.emit(C.EXIT_GAME, playerId);
+      socket.emit(ACTION.EXIT_GAME, playerId);
 
       if (playerId === user) {
         localStorage.removeItem("gameId");
