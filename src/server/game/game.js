@@ -1,20 +1,6 @@
-const cardRegex = new RegExp(
-  /(NUMBER|SKIP|PICKUP2|PICKUP4|SETCOLOUR|SWITCHDIRECTION)(\/(R|G|B|Y))?(\/(\d))?/
-);
-const P2 = "PICKUP2",
-  SK = "SKIP",
-  SD = "SWITCHDIRECTION",
-  P4 = "PICKUP4",
-  SC = "SETCOLOUR",
-  DC = "DRAWCARD",
-  CC = "CHOOSECOLOUR",
-  NC = "NOCOLOUR",
-  SW = "SWAPWITH";
-const numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
-const symbols = [P2, SK, SD];
-const wild = [P4, SC];
-const colours = ["RED", "GREEN", "BLUE", "YELLOW"];
-const actions = [DC, CC, SW];
+const { CARD, CRITERIA, COLOUR } = require("../constants");
+const Config = require("../../config");
+
 const tempNames = [
   "Sirius",
   "Vega",
@@ -28,9 +14,8 @@ const tempNames = [
   "Rigel",
 ];
 
-const Config = require("../../config");
 class Game {
-  constructor({ id }) {
+  constructor({ id, rules: { matches, playCard, action } }) {
     this.id = id;
     this.started = false;
     this.direction = true;
@@ -39,10 +24,17 @@ class Game {
     this.deck = [];
     this.discard = [];
     this.criteria = [];
-    this.actions = [];
+    // this.actions = [];
     this.messages = [];
     this.challenged = false;
     this.drawCount = 0;
+
+    // Custom rules
+    this.rules = {
+      matches,
+      playCard,
+      action,
+    };
   }
 
   status(token) {
@@ -130,7 +122,7 @@ class Game {
     let card;
 
     this.deck.some((c, i) => {
-      if (c.symbol !== P4) {
+      if (c.symbol !== CARD.P4) {
         card = c;
         this.deck.splice(i, 1);
         this.discard.push(card);
@@ -141,25 +133,25 @@ class Game {
 
     this.addMessage(
       false,
-      `started game with ${card.colour !== "NOCOLOUR" ? card.colour : ""} ${
+      `started game with ${card.colour !== CARD.NC ? card.colour : ""} ${
         card.symbol
       }`
     );
 
-    if (card.symbol === P2) {
-      this.criteria.push(DC);
-      this.criteria.push(DC);
-    } else if (card.symbol === SD) {
+    if (card.symbol === CARD.P2) {
+      this.criteria.push(CRITERIA.DC);
+      this.criteria.push(CRITERIA.DC);
+    } else if (card.symbol === CARD.SD) {
       this.direction = !this.direction;
-    } else if (card.symbol === SK) {
+    } else if (card.symbol === CARD.SK) {
       const nextPlayer = this.nextPlayer();
       this.addMessage(
         false,
         `${this.players.filter((p) => nextPlayer)[0].name} skips a go!`
       );
       this.shouldIncrementPlayer();
-    } else if (card.symbol === SC) {
-      this.criteria.push(CC);
+    } else if (card.symbol === CARD.SC) {
+      this.criteria.push(CRITERIA.CC);
     }
   }
 
@@ -186,41 +178,41 @@ class Game {
     this.addMessage(false, "got a deck of cards");
 
     for (let i = 0; i <= 9; i++) {
-      for (let c = 0; c < colours.length; c++) {
+      for (let c = 0; c < CARD.colours.length; c++) {
         this.deck.push({
           symbol: i,
-          colour: colours[c],
+          colour: CARD.colours[c],
         });
       }
     }
 
     for (let i = 1; i <= 9; i++) {
-      for (let c = 0; c < colours.length; c++) {
+      for (let c = 0; c < CARD.colours.length; c++) {
         this.deck.push({
           symbol: i,
-          colour: colours[c],
+          colour: CARD.colours[c],
         });
       }
     }
 
-    for (let i = 0; i < symbols.length; i++) {
-      for (let c = 0; c < colours.length; c++) {
+    for (let i = 0; i < CARD.symbols.length; i++) {
+      for (let c = 0; c < CARD.colours.length; c++) {
         this.deck.push({
-          symbol: symbols[i],
-          colour: colours[c],
+          symbol: CARD.symbols[i],
+          colour: CARD.colours[c],
         });
         this.deck.push({
-          symbol: symbols[i],
-          colour: colours[c],
+          symbol: CARD.symbols[i],
+          colour: CARD.colours[c],
         });
       }
     }
 
-    for (let i = 0; i < wild.length; i++) {
-      for (let c = 0; c < colours.length; c++) {
+    for (let i = 0; i < CARD.wilds.length; i++) {
+      for (let c = 0; c < CARD.colours.length; c++) {
         this.deck.push({
-          symbol: wild[i],
-          colour: NC,
+          symbol: CARD.wilds[i],
+          colour: CARD.NC,
         });
       }
     }
@@ -287,7 +279,7 @@ class Game {
             this.drawCount = 1;
           }
 
-          const criteriaToDraw = this.criteria.indexOf(DC);
+          const criteriaToDraw = this.criteria.indexOf(CRITERIA.DC);
 
           if (criteriaToDraw > -1) {
             this.criteria.splice(criteriaToDraw, 1);
@@ -310,8 +302,8 @@ class Game {
     const old = this.discard.splice(0, this.discard.length - 1);
     this.deck = this.deck.concat(old).map((c) => {
       if (c) {
-        if ([P4, SC].indexOf(c.symbol) > -1) {
-          c.colour = NC;
+        if ([CARD.P4, CARD.SC].indexOf(c.symbol) > -1) {
+          c.colour = CARD.NC;
         }
       }
       return c;
@@ -319,81 +311,8 @@ class Game {
     this.shuffleDeck();
   }
 
-  isNumber(c) {
-    return numbers.indexOf(c.symbol) > -1;
-  }
-  isSymbol(c) {
-    return symbols.indexOf(c.symbol) > -1;
-  }
-  isWild(c) {
-    return wild.indexOf(c.symbol) > -1;
-  }
-
-  matches(ownGo, c1, c2) {
-    if (!c1 || !c2) return false;
-
-    // Anyone can jump in on an exact match
-    if (c1.colour === c2.colour && c1.symbol === c2.symbol) {
-      return true;
-    }
-
-    if (ownGo) {
-      if (this.isNumber(c2)) {
-        if (this.isNumber(c1)) {
-          // Number on Number
-          if (c1.symbol === c2.symbol) return true;
-          if (c1.colour === c2.colour) {
-            if (Math.abs(c1.symbol - c2.symbol) < 2) {
-              return true;
-            }
-            if (
-              (c1.symbol === 0 && c2.symbol === 9) ||
-              (c2.symbol === 0 && c1.symbol === 9)
-            ) {
-              return true;
-            }
-            // Playing on symbol / wild
-            if (
-              wild.indexOf(c1.symbol) > -1 ||
-              symbols.indexOf(c1.symbol) > -1
-            ) {
-              return true;
-            }
-            return false;
-          } else {
-            return false;
-          }
-        }
-        if (this.isSymbol(c1)) {
-          // Number on Symbol
-          return c1.colour == c2.colour;
-        }
-        if (this.isWild(c1)) {
-          // Number on wild (change colour / +4)
-          return c1.colour == c2.colour;
-        }
-      }
-
-      //User is playing a symbol
-      if (this.isSymbol(c2)) {
-        if (this.isNumber(c1)) {
-          return c1.colour === c2.colour;
-        }
-        if (this.isSymbol(c1)) {
-          return c1.symbol === c2.symbol || c1.colour === c2.colour;
-        }
-        if (this.isWild(c1)) {
-          return c1.colour == c2.colour;
-        }
-      }
-
-      //User is playing a wildcard
-      if (this.isWild(c2)) {
-        return true;
-      }
-    }
-
-    return false;
+  matches(playerId, c1, c2) {
+    return this.rules.matches(playerId, this.player, c1, c2);
   }
 
   playCard(card, user) {
@@ -403,12 +322,12 @@ class Game {
     if (this.players.some((p) => p.deck.length === 0)) return false;
 
     //TODO user === this.player
-    if (this.matches(user === this.player, topCard, card)) {
+    if (this.matches(user, topCard, card)) {
       if (user !== this.player) {
         this.player = user;
         this.addMessage(usersName, `jumps in!`);
       }
-      if (this.criteria.filter((c) => c !== SC).length) {
+      if (this.criteria.filter((c) => c !== CARD.SC).length) {
         //cards to pick up
         if (card.symbol !== topCard.symbol || card.colour !== topCard.colour) {
           return false;
@@ -422,7 +341,7 @@ class Game {
 
         this.addMessage(
           usersName,
-          `played a ${card.colour !== "NOCOLOUR" ? card.colour : ""} ${
+          `played a ${card.colour !== CARD.NC ? card.colour : ""} ${
             card.symbol
           }`
         );
@@ -451,7 +370,7 @@ class Game {
               false,
               `Swap hands! ${usersName} must choose who to swap with`
             );
-            this.criteria.push(SW);
+            this.criteria.push(CRITERIA.SW);
           } else {
             let myIndex;
             this.players.forEach((p, i) => {
@@ -473,7 +392,7 @@ class Game {
             this.players[oppositeIndex].deck = playerOneCards;
           }
         }
-        if (card.symbol == SD) {
+        if (card.symbol == CARD.SD) {
           this.direction = !this.direction;
         }
 
@@ -482,16 +401,16 @@ class Game {
         });
 
         // Add criteria to stack
-        if (card.symbol === P4) {
-          for (let i = 0; i < 4; i++) this.criteria.push(DC);
+        if (card.symbol === CARD.P4) {
+          for (let i = 0; i < 4; i++) this.criteria.push(CRITERIA.DC);
         }
-        if (card.symbol === P2) {
-          for (let i = 0; i < 2; i++) this.criteria.push(DC);
+        if (card.symbol === CARD.P2) {
+          for (let i = 0; i < 2; i++) this.criteria.push(CRITERIA.DC);
         }
-        if (card.symbol === SC || card.symbol === P4) {
-          this.criteria.push(CC);
+        if (card.symbol === CARD.SC || card.symbol === CARD.P4) {
+          this.criteria.push(CRITERIA.CC);
         }
-        if (card.symbol == SK) {
+        if (card.symbol == CARD.SK) {
           this.addMessage(
             false,
             ` ${this.getPlayerByToken(this.nextPlayer()).name} skips a go!`
@@ -535,9 +454,10 @@ class Game {
     const card = this.discard[this.discard.length - 1];
 
     const unchosenColour =
-      (card.symbol === P4 || card.symbol === SC) && card.colour == NC;
+      (card.symbol === CARD.P4 || card.symbol === CARD.SC) &&
+      card.colour == CARD.NC;
 
-    if (!unchosenColour && this.criteria.indexOf(SW) === -1) {
+    if (!unchosenColour && this.criteria.indexOf(CRITERIA.SW) === -1) {
       this.player = this.nextPlayer();
     }
   }
@@ -577,9 +497,9 @@ class Game {
   setColour(me, colour) {
     if (this.player === me.token) {
       const topCard = this.discard[this.discard.length - 1];
-      if (topCard.symbol === SC || topCard.symbol === P4) {
-        if (colours.indexOf(colour) > -1) {
-          this.criteria = this.criteria.filter((c) => c !== CC);
+      if (topCard.symbol === CARD.SC || topCard.symbol === CARD.P4) {
+        if (CARD.colours.indexOf(colour) > -1) {
+          this.criteria = this.criteria.filter((c) => c !== CRITERIA.CC);
           topCard.colour = colour;
           return true;
         }
@@ -592,7 +512,7 @@ class Game {
     let p1Index = -1,
       p2Index = -1;
 
-    if (this.criteria.indexOf(SW) === -1) {
+    if (this.criteria.indexOf(CRITERIA.SW) === -1) {
       return false;
     }
 
@@ -646,17 +566,17 @@ class Game {
     this.players = this.players.map((p) => {
       if (
         p.id === previousPlayer &&
-        this.discard[this.discard.length - 1].symbol === P4 &&
+        this.discard[this.discard.length - 1].symbol === CARD.P4 &&
         !this.challenged
       ) {
         this.addMessage(false, "CHALLENGE!");
         const prevCard = this.discard[this.discard.length - 2];
         const wasMatch = p.deck.some(
-          (c) => this.matches(true, prevCard, c) && c.symbol !== P4
+          (c) => this.matches(this.player, prevCard, c) && c.symbol !== CARD.P4
         );
 
         if (!wasMatch) {
-          this.criteria = this.criteria.concat([DC, DC]);
+          this.criteria = this.criteria.concat([CRITERIA.DC, CRITERIA.DC]);
           this.addMessage(
             false,
             "Challenge rejected - plaintiff must now draw 6 cards instead of 4."
